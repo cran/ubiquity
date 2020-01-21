@@ -47,7 +47,7 @@ cfg=system_set_option(cfg, group  = "stochastic",
                            
 
 # Uncomment the following to parallelize the simulations
-#
+# 
 # cfg=system_set_option(cfg, group  = "simulation",
 #                            option = "parallel",    
 #                            value  = "multicore")
@@ -55,7 +55,6 @@ cfg=system_set_option(cfg, group  = "stochastic",
 # cfg=system_set_option(cfg, group  = "simulation",
 #                            option = "compute_cores", 
 #                            value  = detectCores() - 1)
-  
 som  = simulate_subjects(parameters, cfg)
 
 graphics.off()
@@ -70,14 +69,12 @@ myfig = ggplot(som$tcsummary, aes(x=ts.days, y=o.C_ng_ml.mean)) +
                geom_line(aes(x=ts.days, y=o.C_ng_ml.lb_ci), linetype="dashed", size=0.2, color="blue")  +
                xlab("Time (days)")+
                ylab("C (ng/ml) (units)")+
-               #scale_y_log10(limits=c(100, 200000)) +
                guides(fill=FALSE) 
 
 
 myfig = gg_log10_yaxis(myfig, ylim_min=1e3, ylim_max=3e5)
 myfig = prepare_figure("print", myfig)
 print(myfig)
-
 
 ggsave(sprintf('output%smultiple.png', .Platform$file.sep), width=8, height=3.4, plot=myfig)
 

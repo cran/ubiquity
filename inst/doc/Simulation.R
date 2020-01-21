@@ -5,7 +5,6 @@ require(deSolve)
 require(ggplot2)
 require(foreach)
 require(doParallel)
-require(doRNG)
 require(rhandsontable)
 
 ## ---- message=FALSE------------------------------------------------------
@@ -103,8 +102,9 @@ print(p)
 #                         data_file = system.file("ubinc", "csv", "mab_pk_subjects.csv",
 #                                                 package = "ubiquity"))
 
-## ----echo=FALSE----------------------------------------------------------
-#  rhandsontable(cfg$data$SUBS$values, width=800, height=300)
+## ----echo=FALSE, eval=TRUE-----------------------------------------------
+SUBSCSV= read.csv(system.file("ubinc", "csv", "mab_pk_subjects.csv",  package = "ubiquity"))
+rhandsontable( SUBSCSV, width=800, height=300)
 
 ## ----results=FALSE-------------------------------------------------------
 #  cfg=system_set_option(cfg, group  = "stochastic",
@@ -117,6 +117,16 @@ print(p)
 
 ## ----results=FALSE, warning=FALSE, eval=FALSE----------------------------
 #  som  = simulate_subjects(parameters, cfg)
+
+## ----echo=TRUE, eval=FALSE-----------------------------------------------
+#  cfg=system_set_option(cfg, group  = "simulation",
+#                             option = "parallel",
+#                             value  = "multicore")
+#  
+#  cfg=system_set_option(cfg, group  = "simulation",
+#                             option = "compute_cores",
+#                             value  = detectCores() - 1)
+#  
 
 ## ----echo=FALSE, comment='', message=TRUE, eval=TRUE---------------------
 cat(readLines(system.file("ubinc", "systems","system-mab_pk.txt", package="ubiquity")), sep="\n")

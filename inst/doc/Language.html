@@ -13,7 +13,7 @@
 
 <meta name="author" content="John Harrold &amp; Anson Abraham" />
 
-<meta name="date" content="2019-10-14" />
+<meta name="date" content="2020-01-20" />
 
 <title>Modeling Language</title>
 
@@ -218,7 +218,7 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 
 <h1 class="title toc-ignore">Modeling Language</h1>
 <h4 class="author">John Harrold &amp; Anson Abraham</h4>
-<h4 class="date">2019-10-14</h4>
+<h4 class="date">2020-01-20</h4>
 
 
 
@@ -466,8 +466,8 @@ Cp + Tp &lt;=kon:koff=&gt; CpTp
 &lt;O&gt; QC_CLtot = Cp*CL/Vp + Cp*Vmax/(Km+Cp)</code></pre>
 <p>Outputs that begin with <code>QC</code>, like <code>QC_CLtot</code> above, will not be displayed in the ShinyApp. This is intended to make them available at the scripting level for quality control (QC) purposes.</p>
 </div>
-<div id="operators" class="section level2">
-<h2>Operators</h2>
+<div id="functions-and-operators" class="section level2">
+<h2>Functions and operators</h2>
 <p>Most of the standard operators behave as expected (<code>+</code>, <code>-</code>, <code>*</code>, &amp; <code>/</code>) because most languages use these consistently. There are however certain operators and functions that differ between languages. For example, consider the power function (<span class="math inline">\(a^b\)</span>). In FORTRAN this would be <code>a**b</code>, in Matlab it is <code>a^b</code>, and in C it is <code>pow(a,b)</code>. Given the objectives here (write once and create multiple formats), this can be quite challenging. The solution used here is to convert language specific functions and operators into generic functions. So the power operator would be:</p>
 <pre><code>SIMINT_POWER[a][b]</code></pre>
 <p>This would then be converted to the appropriate output format depending on the output target. The following generic functions can be used:</p>
@@ -532,6 +532,25 @@ Cp + Tp &lt;=kon:koff=&gt; CpTp
 </tr>
 </tbody>
 </table>
+<div id="current-simulation-time" class="section level3">
+<h3>Current simulation time</h3>
+<p>For some systems you will want to access the simulation time. To do this you can use the internal variable <code>SIMINT_TIME</code>.</p>
+</div>
+<div id="modeling-quasi-equilibrium-of-target-mediated-drugs" class="section level3">
+<h3>Modeling quasi-equilibrium of target-mediated drugs</h3>
+<p>The free amount of a drug <code>Cfree</code> which is binding to a receptor with an affinity of <code>KD</code> given total values <code>Ctot</code> and <code>Rtot</code> the following can be calculated using the following equation:</p>
+<p><span class="math display">\[
+C_{free}=\frac{1}{2}
+\left[
+(C_{tot}-R_{tot}-K_D)
++ \sqrt{(C_{tot}-R_{tot}-K_D)^2 + 4K_DC_{tot}}
+\right]
+\]</span></p>
+<p>This can be tedious, especially using the generic functions above. To make this easier you can use the following generic function:</p>
+<pre><code>&lt;Ad&gt; Cfree = SIMINT_QEQ[Ctot][Rtot][KD]</code></pre>
+<p>To get <code>Rfree</code>, just switch the first two arguments:</p>
+<pre><code>&lt;Ad&gt; Rfree = SIMINT_QEQ[Rtot][Ctot][KD]</code></pre>
+</div>
 </div>
 <div id="timescales" class="section level2">
 <h2>Timescales</h2>
@@ -576,7 +595,7 @@ Cp + Tp &lt;=kon:koff=&gt; CpTp
 <h2>Piecewise-continuous functions/parameters <code>&lt;IF:?:?&gt;</code></h2>
 <p>To specify a conditional assignment use the statement:</p>
 <pre><code>&lt;IF:name:COND&gt; boolean; value</code></pre>
-<p>Here <code>name</code> is the name of the secondary parameter be defined and <code>COND</code> indicates that we have a Boolean condition that needs to be satisfied. The condition (<code>Boolean</code>) can be and, or, greater than, etc. relationships. The parameter will be assigned to have the value when this Boolean relationship is true. These conditions can be a function of different elements of the system depending on whether or not name refers to a static or dynamic secondary parameter:</p>
+<p>Here <code>name</code> is the name of the secondary parameter be defined and <code>COND</code> indicates that we have a Boolean condition that needs to be satisfied. The condition (<code>boolean</code>) can be and, or, greater than, etc. relationships. The parameter will be assigned to have the value when this Boolean relationship is true. These conditions can be a function of different elements of the system depending on whether or not name refers to a static or dynamic secondary parameter:</p>
 <ul>
 <li><code>&lt;As&gt;</code> function of system parameters, previously defined static secondary parameters and covariates that do not change for a given subject.</li>
 <li><code>&lt;Ad&gt;</code> function of system parameters, static secondary parameters, states, previously defined dynamic secondary parameters and covariates.</li>
@@ -616,8 +635,9 @@ Cp + Tp &lt;=kon:koff=&gt; CpTp
 <div id="references" class="section level2">
 <h2>References</h2>
 <ul>
-<li>[DM] Dirks &amp; Meibohm Clin. PK 2010 Oct 1;49(10):633-59</li>
-<li>[VR] Vieira &amp; Rajewsky Eur J Immunol. 1988 Feb;18(2):313-6</li>
+<li>[DM] <a href="https://doi.org/10.2165/11535960-000000000-00000">Dirks &amp; Meibohm Clin. PK 2010 Oct 1;49(10):633-59</a></li>
+<li>[MK] <a href="https://doi.org/10.1007/s11095-005-6650-0">Mager, D.E. &amp; Krzyzanski, W. Pharm Res (2005) 22: 1589.</a></li>
+<li>[VR] <a href="https://doi.org/10.1002/eji.1830180221">Vieira &amp; Rajewsky Eur J Immunol. 1988 Feb;18(2):313-6</a></li>
 </ul>
 </div>
 <div class="footnotes">

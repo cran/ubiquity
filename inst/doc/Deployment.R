@@ -5,7 +5,6 @@ require(deSolve)
 require(ggplot2)
 require(foreach)
 require(doParallel)
-require(doRNG)
 require(rhandsontable)
 
 ## ----results="hide", message=FALSE, echo=TRUE----------------------------

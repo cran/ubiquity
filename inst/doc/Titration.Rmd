@@ -16,7 +16,6 @@ require(deSolve)
 require(ggplot2)
 require(foreach)
 require(doParallel)
-require(doRNG)
 require(rhandsontable)
 
 # The presim variable will contain presimualted data when eval is set to true
@@ -38,7 +37,7 @@ if(file.exists("Titration_presim.RData")){
 
 ## Introduction
 
-In the Simulation vignette several examples are provided using fixed dosing regimens. This works well for compounds that are relatively safe, the PK is consistent over time, and for which the drug concentrations required to achieve efficacy are consistent. In fact these restrictions apply to many different compounds. However, there are many scenarios where it is necessary to adjust dosing based on periodic clinical visits: compounds with a narrow therapeutic index, disease progression which alters the drug PK or requires increases in the dose amount, etc. While it is possible to do this manually with the current simulation tools provided, this section outlines a generalized framework to make this easier for the users. The workshop (http://workshop.ubiquity.grok.tv) provides several examples of running titration or rule-based simulations. To make a copy of these scripts and other supporting files in the current working directory run the following:
+In the Simulation vignette several examples are provided using fixed dosing regimens. This works well for compounds that are relatively safe, the PK is consistent over time, and for which the drug concentrations required to achieve efficacy are consistent. In fact these restrictions apply to many different compounds. However, there are many scenarios where it is necessary to adjust dosing based on periodic clinical visits: compounds with a narrow therapeutic index, disease progression which alters the drug PK or requires increases in the dose amount, etc. While it is possible to do this manually with the current simulation tools provided, this section outlines a generalized framework to make this easier for the users. The workshop (http://workshop.ubiquity.tools) provides several examples of running titration or rule-based simulations. To make a copy of these scripts and other supporting files in the current working directory run the following:
 
 ```{r eval=FALSE}
 library(ubiquity)
@@ -56,7 +55,7 @@ This should provide you with the following scripts:
 Titration or rule-based simulations are run using the following functions:
 
 * ``system_new_tt_rule`` - Defines a new rule and the times when it is evaluated
-* ``system_new_tt_cond`` - Adds a condition to a rule and an associated action to perform when that condition is true
+* ``system_set_tt_cond`` - Adds a condition to a rule and an associated action to perform when that condition is true
 * ``run_simulation_titration`` - Runs an individual simulation using titration rules
 
 ## Repeated Bolus Dosing (``analysis_repeat_dosing.r``)
@@ -87,7 +86,7 @@ cfg=system_set_option(cfg,
                       value       = TRUE)
 ```
 
-Next we need to define a rule using ``system_new_tt_rule``. A rule contains a set of times (and the timescale) where we want to evaluate that rule. Here we create a rule called ``"ivdose"`` and we evaluate this rule at weeks 0, 2, 4, 6 and 8. Any timescale defined using ``<TS:?`` in the system file can be used:
+Next we need to define a rule using ``system_new_tt_rule``. A rule contains a set of times (and the timescale) where we want to evaluate that rule. Here we create a rule called ``"ivdose"`` and we evaluate this rule at weeks 0, 2, 4, 6 and 8. Any timescale defined using ``<TS:?>`` in the system file can be used:
 ```{r results="hide", message=FALSE}
 cfg=system_new_tt_rule(cfg,   
                        name       = "ivdose",
@@ -95,7 +94,7 @@ cfg=system_new_tt_rule(cfg,
                        timescale  = "weeks")
 ```
                                   
-Once a rule has been created you can attach conditions to that rule using ``system_set_tt_cond``. The name passed to this function is the name of the rule this condition applies. The ``cond`` argument is a string that will be evaluated internally. You put any kind of Boolean argument you want here, or even create a user definable function that returns a Boolean argument (eg, ``'myfunction(arguments)'``). When this condition evaluates as true the string in ``action`` will be evaluated. The string ``SI_TT_BOLUS`` is a prototype function used to modify dosing at the titration points. See the help (``?system_new_tt_cond``) for details on prototype functions and the variables available in the titration environment. This action will define the dosing into the specified state (as defined by ``<B:?>`` in the system file)  with the values and times shown. The units here are those specified in the system file and the times are relative to the titration time point. 
+Once a rule has been created you can attach conditions to that rule using ``system_set_tt_cond``. The name passed to this function is the name of the rule this condition applies. The ``cond`` argument is a string that will be evaluated internally. You put any kind of Boolean argument you want here, or even create a user definable function that returns a Boolean argument (eg, ``'myfunction(arguments)'``). When this condition evaluates as true the string in ``action`` will be evaluated. The string ``SI_TT_BOLUS`` is a prototype function used to modify dosing at the titration points. See the help (``?system_set_tt_cond``) for details on prototype functions and the variables available in the titration environment. This action will define the dosing into the specified state (as defined by ``<B:?>`` in the system file)  with the values and times shown. The units here are those specified in the system file and the times are relative to the titration time point. 
 ```{r results="hide", message=FALSE}
 cfg=system_set_tt_cond(cfg,       
                        name       = "ivdose",

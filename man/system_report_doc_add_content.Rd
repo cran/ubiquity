@@ -16,27 +16,58 @@ system_report_doc_add_content(cfg, rptname = "default",
 
 \item{content}{list containing content to add 
 
-For each content type listed below the following content is expected:
+For each content type listed below the different content is expected. Text
+can be specified in different formats: \code{"text"} indicates plain text,
+\code{"fpar"} is formatted text defined by the \code{fpar} command from the
+\code{officer} package, and \code{"md"} is text formatted in markdown
+format (\code{?md_to_officer} for markdown details).
 
 \itemize{
- \item \code{"text"} text string of information
- \item \code{"list"} vector of paired values (indent level and text), eg.  c(1, "Main Bullet", 2 "Sub Bullet")
- \item \code{"imagefile"} image from a file
+ \item \code{"break"} page break, content is (\code{NULL}) and a page break will be inserted here
+ \item \code{"toc"} generates the table of contents, and content is a list 
+  \itemize{
+     \item \code{"level"} number indicating the depth of the contents to display (\code{3})
+   }
+ \item \code{"text"} content is a list containing a paragraph of text with the following elements
+  \itemize{
+     \item \code{"text"} string containing the text content either a string or the output of \code{"fpar"} for formatted text.
+     \item \code{"style"} string containing the style either \code{"normal"}, \code{"code"}, \code{"h1"}, \code{"h2"}, \code{"h3"}
+     \item \code{"format"} string containing the format, either \code{"text"}, \code{"fpar"}, or \code{"md"} (default \code{NULL} assumes \code{"text"} format)
+   }
+ \item \code{"imagefile"} content is a list containing describing an image file with the following elements
   \itemize{
      \item \code{image} string containing path to image file
-     \item \code{caption} Text containing the caption of the image
+     \item \code{caption} caption of the image (\code{NULL})  
+     \item \code{caption_format} string containing the format, either \code{"text"}, \code{"fpar"}, or \code{"md"} (default \code{NULL} assumes \code{"text"} format)
+     \item \code{height} height of the image (\code{NULL})
+     \item \code{width} width of the image (\code{NULL})
    }
- \item \code{"ggplot"} ggplot object, eg. p = ggplot() + ....
+ \item \code{"ggplot"} content is a list containing an image from a ggplot object, (eg. p = ggplot() + ....) with the following elements
   \itemize{
      \item \code{image} ggplot object
-     \item \code{caption} Text containing the caption of the image
+     \item \code{caption} caption of the image (\code{NULL})  
+     \item \code{caption_format} string containing the format, either \code{"text"}, \code{"fpar"}, or \code{"md"} (default \code{NULL} assumes \code{"text"} format)
+     \item \code{height} height of the image (\code{NULL})
+     \item \code{width} width of the image (\code{NULL})
    }
- \item \code{"table"} list containing the table content and other options with the following elements (defaults in parenthesis):
+ \item \code{"table"} content list containing the table content and other options with the following elements:
   \itemize{
-     \item \code{table} Data frame containing the tabular data
-     \item \code{caption} Text containing the caption of the table 
+     \item \code{table} data frame containing the tabular data
+     \item \code{caption} caption of the table (\code{NULL})  
+     \item \code{caption_format} string containing the format, either \code{"text"}, \code{"fpar"}, or \code{"md"} (default \code{NULL} assumes \code{"text"} format)
      \item \code{header} Boolean variable to control displaying the header (\code{TRUE})
      \item \code{first_row} Boolean variable to indicate that the first row contains header information (\code{TRUE})
+   }
+ \item \code{"flextable"} list containing flextable content and other options with the following elements (defaults in parenthesis):
+  \itemize{
+     \item \code{table} Data frame containing the tabular data
+     \item \code{caption} caption of the table (\code{NULL})  
+     \item \code{caption_format} string containing the format, either \code{"text"}, \code{"fpar"}, or \code{"md"} (default \code{NULL} assumes \code{"text"} format)
+     \item \code{header_top}, \code{header_middle}, \code{header_bottom} (\code{NULL}) a list with the same names as the data frame names containing the tabular data and values with the header text to show in the table
+     \item \code{merge_header} (\code{TRUE}) Set to true to combine column headers with the same information
+     \item \code{table_body_alignment}, table_header_alignment ("center") Controls alignment
+     \item \code{table_autofit} (\code{TRUE}) Automatically fit content, or specify the cell width and height with \code{cwidth} (\code{0.75}) and \code{cheight} (\code{0.25})
+     \item \code{table_theme} (\code{"theme_vanilla"}) Table theme
    }
 }}
 }
@@ -45,15 +76,4 @@ cfg ubiquity system object with the content added to the body
 }
 \description{
 Appends content to the body of a word document
-
-For example if you have <HEADER_LEFT> in the header of your document and you wanted to
-replace it with the text "Upper left" you would do the following:
-
-\code{
-  cfg = system_report_doc_set_ph(cfg, 
-        ph_content  = "Upper Left" ,
-        ph_name     = "HEADER_LEFT", 
-        ph_location = "header")}
-
-Notice the \code{ph_name} just has \code{HEADER_LEFT} and leaves off the \code{<>}
 }

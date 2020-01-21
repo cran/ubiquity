@@ -448,7 +448,7 @@ For example:
 
 Outputs that begin with ``QC``, like ``QC_CLtot`` above, will not be displayed in the ShinyApp. This is intended to make them available at the scripting level for quality control (QC) purposes.
 
-## Operators 
+## Functions and operators
 
 Most of the standard operators behave as expected (``+``, ``-``, ``*``, & ``/``) because most languages use these consistently. There are however certain operators and functions that differ between languages. For example, consider the power function ($a^b$). In FORTRAN this would be ``a**b``, in Matlab it is ``a^b``, and in C it is ``pow(a,b)``. Given the objectives here (write once and create multiple formats), this can be quite challenging. The solution used here is to convert language specific functions and operators into generic functions. So the power operator would be:
 
@@ -471,6 +471,33 @@ greater than or equal  | $a \ge b$ | ``SIMINT_GE[a][b]``
 equal                  | $a == b$  | ``SIMINT_EQ[a][b]``
 and                    | $a \& b$  | ``SIMINT_AND[a][b]``
 
+
+
+### Current simulation time
+For some systems you will want to access the simulation time. To do this you can use the internal variable  ``SIMINT_TIME``.
+
+### Modeling quasi-equilibrium of target-mediated drugs
+The free amount of a drug ``Cfree`` which is binding to a receptor with an affinity of ``KD`` given total values ``Ctot`` and ``Rtot`` the following can be calculated using the following equation: 
+
+$$
+C_{free}=\frac{1}{2}
+\left[
+(C_{tot}-R_{tot}-K_D)
++ \sqrt{(C_{tot}-R_{tot}-K_D)^2 + 4K_DC_{tot}}
+\right]
+$$
+
+This can be tedious, especially using the generic functions above. To make this easier you can use the following generic function:
+
+~~~
+<Ad> Cfree = SIMINT_QEQ[Ctot][Rtot][KD]
+~~~
+
+To get ``Rfree``, just switch the first two arguments:
+
+~~~
+<Ad> Rfree = SIMINT_QEQ[Rtot][Ctot][KD]
+~~~
 
 ## Timescales
 
@@ -532,9 +559,7 @@ Expands to:
 <I> TS = T0_TS
 ~~~
 
-
 Similar to the initial condition, the equilibrium between the monomeric drug and the different targets can be defined using a single statement:
-
 
 ~~~
 D + {TSi} <=kon:koff=> D_{TSi}
@@ -558,11 +583,8 @@ To specify a conditional assignment use the statement:
 
 Here ``name`` is the name of the secondary parameter be defined and ``COND`` indicates
 that we have a Boolean condition that needs to be satisfied. The condition
-(``Boolean``) can be and, or, greater than, etc. relationships. 
-The parameter
-will be assigned to have the value when this Boolean relationship is true. These
-conditions can be a function of different elements of the system depending on
-whether or not name refers to a static or dynamic secondary parameter:
+(``boolean``) can be and, or, greater than, etc. relationships. 
+The parameter will be assigned to have the value when this Boolean relationship is true. These conditions can be a function of different elements of the system depending on whether or not name refers to a static or dynamic secondary parameter:
 
 * ``<As>`` function of system parameters, previously defined static secondary parameters and covariates that do not change for a given subject.
 * ``<Ad> `` function of system parameters, static secondary parameters, states, previously defined dynamic secondary parameters and covariates.
@@ -627,8 +649,8 @@ To define the default output times for the ShinyApp and simulation scripts use t
 
 ## References
 
-* [DM] Dirks & Meibohm Clin. PK 2010 Oct 1;49(10):633-59
-* [VR] Vieira & Rajewsky Eur J Immunol. 1988 Feb;18(2):313-6
-
+* [DM] [Dirks & Meibohm Clin. PK 2010 Oct 1;49(10):633-59](https://doi.org/10.2165/11535960-000000000-00000)
+* [MK] [Mager, D.E. & Krzyzanski, W. Pharm Res (2005) 22: 1589.](https://doi.org/10.1007/s11095-005-6650-0)
+* [VR] [Vieira & Rajewsky Eur J Immunol. 1988 Feb;18(2):313-6](https://doi.org/10.1002/eji.1830180221) 
 
 [^1]: parameter set short names must start with a letter and containing only letters, numbers, and _

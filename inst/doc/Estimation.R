@@ -5,7 +5,6 @@ require(deSolve)
 require(ggplot2)
 require(foreach)
 require(doParallel)
-require(doRNG)
 require(rhandsontable)
 
 ## ----eval=FALSE----------------------------------------------------------
@@ -131,6 +130,16 @@ require(rhandsontable)
 #  estout$op =  plinfo$obs_pred$Parent
 #  ggsave(filename="Estimation-parent-tc.png", plot=estout$tc, height=4, width=7, units="in", dpi=72)
 #  ggsave(filename="Estimation-parent-op.png", plot=estout$op, height=4, width=7, units="in", dpi=72)
+
+## ----results="hide", echo=TRUE, eval=FALSE-------------------------------
+#  cfg = system_report_init(cfg, rpttype="PowerPoint")
+#  cfg = system_report_estimation(cfg=cfg, analysis_name=analysis_name)
+#  system_report_save(cfg=cfg, output_file=file.path("output",paste(analysis_name, "-report.pptx", sep="")))
+
+## ----results="hide", echo=TRUE, eval=FALSE-------------------------------
+#  cfg = system_report_init(cfg, rpttype="Word")
+#  cfg = system_report_estimation(cfg=cfg, analysis_name=analysis_name)
+#  system_report_save(cfg=cfg, output_file=file.path("output",paste(analysis_name, "-report.docx", sep="")))
 
 ## ----results="hide", echo=TRUE, eval=FALSE-------------------------------
 #  pnames = c('Vp',

@@ -1,11 +1,10 @@
 ## ----setup, include=FALSE------------------------------------------------
-knitr::opts_chunk$set(echo = TRUE, message=FALSE, eval=FALSE )
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, eval=FALSE)
 require(ubiquity)
 require(deSolve)
 require(ggplot2)
 require(foreach)
 require(doParallel)
-require(doRNG)
 require(ubiquity)
 require(officer)
 require(flextable)
@@ -17,7 +16,7 @@ require(flextable)
 ## ----results="hide", message=FALSE, warning=FALSE------------------------
 #  system_new(file_name="system.txt", system_file="mab_pk", overwrite = TRUE)
 #  cfg = build_system(system_file = "system.txt")
-#  cfg = system_report_init(cfg)
+#  cfg = system_report_init(cfg, rpttype="PowerPoint")
 
 ## ----results="hide", message=FALSE, warning=FALSE------------------------
 #  cfg = system_report_slide_title(cfg,
@@ -113,8 +112,135 @@ require(flextable)
 #  system_report_save(cfg, output_file = "report_vignette.pptx")
 
 ## ----results="hide", message=FALSE, warning=FALSE, eval=FALSE------------
+#  cfg = system_report_init(cfg, rpttype="Word")
+
+## ----results="hide", message=FALSE, warning=FALSE, eval=FALSE------------
+#  cfg = system_report_doc_add_content(cfg,
+#    content_type  = "toc",
+#    content       = list(level=1))
+
+## ----results="hide", message=FALSE, warning=FALSE, eval=FALSE------------
+#  cfg = system_report_doc_add_content(cfg,
+#    content_type  = "text",
+#    content       = list(style   = "h1",
+#                         text    = "This will insert a level 1 header"))
+
+## ----results="hide", message=FALSE, warning=FALSE, eval=FALSE------------
+#  cfg = system_report_doc_add_content(cfg,
+#    content_type  = "text",
+#    content       = list(style   = "normal",
+#                         text    = "This is plain text"))
+
+## ----results="hide", message=FALSE, warning=FALSE, eval=FALSE------------
+#  fpartext = fpar(
+#  ftext("Formatted text can be created using the ", prop=NULL),
+#  ftext("fpar ", prop=officer::fp_text(color="green")),
+#  ftext("command from the officer package.", prop=NULL))
+#  
+#  cfg = system_report_doc_add_content(cfg,
+#    content_type  = "text",
+#    content       = list(style   = "normal",
+#                         format  = "fpar",
+#                         text    = fpartext))
+
+## ----results="hide", message=FALSE, warning=FALSE, eval=FALSE------------
+#  mdtext = "Text can be specified in markdown format as well. You can specify
+#  *bold text*, **italicized text**, ^superscripts^ and ~subscripts~. These can
+#  be combined as well *H*~*2*~*0*.
+#  
+#  You can change colors to  <color:red>red</color>, <color:blue>blue</color>, etc and
+#  change the <shade:#33ff33>shading</shade>. Again these can be combined
+#  <shade:orange><color:green>both color and shading</color></shade>. You can also
+#  change the font to things like <ff:symbol>*symbol*</ff>."
+#  
+#  cfg = system_report_doc_add_content(cfg,
+#    content_type  = "text",
+#    content       = list(style  = "normal",
+#                         format = "md",
+#                         text   = mdtext))
+
+## ----results="hide", message=FALSE, warning=FALSE, eval=FALSE------------
+#  p = ggplot() + annotate("text", x=0, y=0, label = "picture example")
+#  imagefile = tempfile(pattern="image", fileext=".png")
+#  ggsave(filename=imagefile, plot=p, height=5.15, width=9, units="in")
+
+## ----results="hide", message=FALSE, warning=FALSE, eval=FALSE------------
+#  cfg = system_report_doc_add_content(cfg,
+#    content_type  = "imagefile",
+#    content       = list(image   = imagefile,
+#                         caption = "This is an image file"))
+#  
+#  cfg = system_report_doc_add_content(cfg,
+#    content_type  = "ggplot",
+#    content       = list(image   = p,
+#                         caption = "This is a ggplot image"))
+
+## ----results="hide", message=FALSE, warning=FALSE, eval=FALSE------------
+#  tc = list()
+#  tc$table = data.frame(Parameters = c("Vp", "Cl", "Q", "Vt"),
+#                        Values     = 1:4,
+#                        Units      = c("L", "L/hr", "L/hr", "L") )
+#  tc$header    = TRUE
+#  tc$first_row = TRUE
+#  tc$caption = "This is a table"
+#  
+#  cfg = system_report_doc_add_content(cfg,
+#    content_type  = "table",
+#    content       = tc)
+
+## ----results="hide", message=FALSE, warning=FALSE, eval=FALSE------------
+#  tcf = list()
+#  tcf$caption = "This is a flextable"
+#  tcf$table = data.frame(Parameters = c("Vp", "Cl", "Q", "Vt"),
+#                         Values     = 1:4,
+#                         Units      = c("L", "L/hr", "L/hr", "L") )
+#  tcf$header_top   =
+#       list(Parameters     = "Name",
+#            Values         = "Value",
+#            Units          = "Units")
+#  
+#  tcf$cwidth        = 0.8
+#  tcf$table_autofit = TRUE
+#  tcf$table_theme   ='theme_zebra'
+#  
+#  cfg = system_report_doc_add_content(cfg,
+#    content_type  = "flextable",
+#    content       = tcf)
+#  
+
+## ----results="hide", message=FALSE, warning=FALSE, eval=FALSE------------
+#  cfg = system_report_doc_set_ph(cfg,
+#        ph_content  = "Jill Smith" ,
+#        ph_name     = "PHName",
+#        ph_location = "header")
+
+## ----results="hide", message=FALSE, warning=FALSE, eval=FALSE------------
+#  cfg = system_report_doc_format_section(cfg, section_type="continuous")
+
+## ----results="hide", message=FALSE, warning=FALSE, eval=FALSE------------
+#  p = ggplot() + annotate("text", x=0, y=0, label = "picture example")
+#  
+#  cfg = system_report_doc_add_content(cfg,
+#    content_type  = "ggplot",
+#    content       = list(image   = p,
+#                         height  = 2.5,
+#                         width   = 9,
+#                         caption = "This is a landscape figure"))
+
+## ----results="hide", message=FALSE, warning=FALSE, eval=FALSE------------
+#  cfg = system_report_doc_format_section(cfg, section_type="landscape", h=8, w=10)
+
+## ----results="hide", message=FALSE, warning=FALSE------------------------
+#  system_report_save(cfg, output_file = "report_vignette.docx")
+
+## ----results="hide", message=FALSE, warning=FALSE, eval=FALSE------------
 #  cfg = build_system()
 #  cfg = system_report_init(cfg, template="mytemplate.pptx")
+#  cfg = system_report_view_layout(cfg)
+
+## ----results="hide", message=FALSE, warning=FALSE, eval=FALSE------------
+#  cfg = build_system()
+#  cfg = system_report_init(cfg, template="mytemplate.docx")
 #  cfg = system_report_view_layout(cfg)
 
 ## ----results="hide", message=FALSE, warning=FALSE, eval=FALSE------------
@@ -125,4 +251,22 @@ require(flextable)
 #  cfg = system_report_init(cfg  = cfg,
 #              meta     = org_pptx_meta(),
 #              template = "mytemplate.pptx")
+
+## ----results="hide", message=FALSE, warning=FALSE, eval=FALSE------------
+#  source("myOrg.R")
+#  cfg = system_report_init(cfg  = cfg,
+#              meta     = org_docx_meta(),
+#              template = "mytemplate.docx")
+
+## ----results="hide", message=FALSE, warning=FALSE, eval=FALSE------------
+#  cfg = system_report_estimation(cfg=cfg, analysis_name="analysis_name")
+
+## ----results="hide", message=FALSE, warning=FALSE, eval=FALSE------------
+#  cfg = system_report_nca(cfg, analysis_name = "default")
+
+## ----results="hide", message=FALSE, warning=FALSE, eval=FALSE------------
+#  rpt = system_report_fetch(cfg)
+
+## ----results="hide", message=FALSE, warning=FALSE, eval=FALSE------------
+#  cfg = system_report_set(cfg, rpt = rpt)
 

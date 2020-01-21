@@ -140,10 +140,15 @@ if(presim_loaded){
 rhandsontable(nca_summary,  width=500, height=200)
 
 ## ----warning=FALSE, message=FALSE, eval=FALSE, echo=TRUE, error=FALSE, results="hide", fig.width=8, fig.height=4----
-#  cfg = system_report_init(cfg)
+#  cfg = system_report_init(cfg, rpttype="PowerPoint")
 #  cfg = system_report_slide_title(cfg, title = "NCA of Single Dose PK")
 #  cfg = system_report_nca(cfg, analysis_name = "pk_single_dose")
 #  system_report_save(cfg, output_file=file.path("output", "pk_single_dose-report.pptx"))
+
+## ----warning=FALSE, message=FALSE, eval=FALSE, echo=TRUE, error=FALSE, results="hide", fig.width=8, fig.height=4----
+#  cfg = system_report_init(cfg, rpttype="Word")
+#  cfg = system_report_nca(cfg, analysis_name = "pk_single_dose")
+#  system_report_save(cfg=cfg, output_file=file.path("output", "pk_single_dose-report.docx"))
 
 ## ----warning=FALSE, message=FALSE, echo=TRUE, error=FALSE, results="hide", fig.width=8, fig.height=4----
 #  cfg = build_system(system_file="system.txt")
