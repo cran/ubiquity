@@ -1,19 +1,18 @@
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
 
 <head>
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 
 <meta name="author" content="John Harrold &amp; Anson Abraham" />
 
-<meta name="date" content="2020-01-20" />
+<meta name="date" content="2020-07-05" />
 
 <title>Modeling Language</title>
 
@@ -32,9 +31,6 @@ padding-right: 2em;
 font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
 font-size: 14px;
 line-height: 1.35;
-}
-#header {
-text-align: center;
 }
 #TOC {
 clear: both;
@@ -203,7 +199,8 @@ code > span.st { color: #d14; }
 code > span.co { color: #888888; font-style: italic; } 
 code > span.ot { color: #007020; } 
 code > span.al { color: #ff0000; font-weight: bold; } 
-code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61717; background-color: #e3d2d2; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
 </style>
 
 
@@ -218,13 +215,13 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 
 <h1 class="title toc-ignore">Modeling Language</h1>
 <h4 class="author">John Harrold &amp; Anson Abraham</h4>
-<h4 class="date">2020-01-20</h4>
+<h4 class="date">2020-07-05</h4>
 
 
 
 <div id="introduction" class="section level2">
 <h2>Introduction</h2>
-<p>At its core, ubiquity is a modeling language and a set of scripts meant to facilitate model development and deployment. The focus of this vignette is on the model description language. This is a plain text file, referred to as a <strong>system file</strong>. Each line contains a descriptor (e.g. <code>&lt;P&gt;</code>) which defines an aspect of the model, and comments are made with the hash sign (<code>#</code>). What follows is an overview of the different components of the language that can be used to create a system file.</p>
+<p>At its core, ubiquity is a modeling language and a set of scripts meant to facilitate model development and deployment. The focus of this document is on the model description language. This is a plain text file, referred to as a <strong>system file</strong>. Each line contains a descriptor (e.g. <code>&lt;P&gt;</code>) which defines an aspect of the model, and comments are made with the hash sign (<code>#</code>). What follows is an overview of the different components of the language that can be used to create a system file.</p>
 </div>
 <div id="parameters" class="section level2">
 <h2>Parameters</h2>
@@ -330,13 +327,15 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <p>Where the stoichiometric coefficients, beginning with <code>CR</code> and <code>CP</code> above, in brackets only need to be specified if they are not one. The reaction order will be assumed to be equal to the stoichiometric coefficient of the reactant. For a more specific example Consider decomposition of hydrogen peroxide into water and oxygen:</p>
 <p><span class="math display">\[ H_2O_2 \xrightarrow{k_{deg}} H_2O + \frac{1}{2}O_2 \]</span></p>
 <p>In the system format this would be written in the following manner:</p>
-<pre><code>H2O2 =kdeg=&gt; H2O + [1/2]O2</code></pre>
+<pre><code>H2O2 =kdeg=&gt; H2O + [0.5]O2</code></pre>
 <p>And this will be translated in to the following differential equations:</p>
 <pre><code>&lt;ODE:H2O2&gt;   - kdeg*H2O2 
 &lt;ODE:H2O&gt;      kdeg*H2O2 
 &lt;ODE:O2&gt;   0.5*kdeg*H2O2 </code></pre>
 <p>The rates (e.g. <code>kdeg</code>) need to be defined as either a system or secondary parameter. This is where you can put saturable terms, such as Michaelis-Menten kinetics.</p>
-<p>###Equilibrium relationships <code>&lt;=kforward:kreverse=&gt;</code></p>
+</div>
+<div id="equilibrium-relationships-kforwardkreverse" class="section level3">
+<h3>Equilibrium relationships <code>&lt;=kforward:kreverse=&gt;</code></h3>
 <p>Forward and reverse reaction rates can be written separately:</p>
 <pre><code>A + B =konR=&gt;   C       
 C     =koffR=&gt;  A + B</code></pre>
@@ -403,7 +402,8 @@ Cp + Tp &lt;=kon:koff=&gt; CpTp
 <div id="model-inputs" class="section level2">
 <h2>Model inputs</h2>
 <p>Inputs into the model include typical interventions such as bolus dosing or continuous infusions. However inputs here refers to mathematical inputs. Typically covariates may be attributes of the system (such as gender, or a specific genotype), but are treated here as inputs. When defining inputs it is necessary to provide typical/placeholder values. These provide default values for both the ShinyApp interface as well as the scripting level (Matlab and R) where they can be overwritten by the user.</p>
-<p>###Bolus dosing <code>&lt;B:times&gt;</code>, <code>&lt;B:events&gt;</code></p>
+<div id="bolus-dosing-btimes-bevents" class="section level3">
+<h3>Bolus dosing <code>&lt;B:times&gt;</code>, <code>&lt;B:events&gt;</code></h3>
 <p>The <code>&lt;B:?&gt;</code> descriptor is used to define bolus dosing. Dosing information is broken down into a list of <code>times</code> when bolus injections occur and a list of <code>events</code> containing the amount the specified compartment will receive.</p>
 <p>Each of these has a <code>scale</code> that is used to convert the bolus dosing information from proscribed units (mg daily) into the units in which the system is coded (nM and hours). So if dosing is done on days 0, 1, 2… but the simulation time is hours, then the scale for the dosing times is 24.</p>
 <p>The events contain the magnitude of the bolus at a given time. If you have multiple compartments receiving a bolus, the times must include all times in which a bolus may be applied to the system. If a state does not receive a bolus on a particular time, it’s magnitude at that time is 0.</p>
@@ -418,6 +418,7 @@ Cp + Tp &lt;=kon:koff=&gt; CpTp
 &lt;B:events&gt;;    Cp1;   [8 2 0];    70/V1;  mpk   
 &lt;B:events&gt;;    Cp2;   [0 0 5];    70/V2;  mpk   </code></pre>
 <p>Assume <code>V1</code> and <code>V2</code> are the compartmental volumes for <span style="color:purple"><strong>D1</strong></span> and <span style="color:orange"><strong>D2</strong></span> in ml, and the subject body weight is 70 kg. This would convert those doses in mpk into mg/ml. Again these are the default doses that can be overwritten both in the ShinyApp and within scripts.</p>
+</div>
 <div id="continuous-infusions-r" class="section level3">
 <h3>Continuous infusions <code>&lt;R:?&gt;</code></h3>
 <p>Rates of infusion are defined using the <code>&lt;R:?&gt;</code> descriptor. Like bolus values, infusion rates have two components. There is a component that specifies switching times (e.g. switching from 10 mg/hr to 0). And each switching time has a corresponding rate of infusion. This infusion rate will be held constant until the next time. Also like the bolus specification there is a <strong>scale</strong> associated with both infusion <code>times</code> and the <code>levels</code> that converts the proscriptive units into the units of the simulation. Consider the following example:</p>
@@ -428,7 +429,10 @@ Cp + Tp &lt;=kon:koff=&gt; CpTp
 </div>
 <div id="covariates-cv-cvset" class="section level3">
 <h3>Covariates <code>&lt;CV:?&gt;</code>, <code>&lt;CVSET:?:?&gt;</code></h3>
-<p>###Simple covariates For simulation purposes covariates (normally found in a dataset) need to be defined. Covariates can be either constant or change with time. The times values <em>must be the same scale as the system</em>. The following defines the value for the covariate <code>RACE</code>:</p>
+</div>
+<div id="simple-covariates" class="section level3">
+<h3>Simple covariates</h3>
+<p>For simulation purposes covariates (normally found in a dataset) need to be defined. Covariates can be either constant or change with time. The times values <em>must be the same scale as the system</em>. The following defines the value for the covariate <code>RACE</code>:</p>
 <pre><code>&lt;CV:RACE&gt;; times;  [0];     hours
 &lt;CV:RACE&gt;; values; [1];     ethnicity</code></pre>
 <p>Covariates can also change with time. In this case consider the subject weight (<code>WGT</code>). It begins at <code>70</code> and measurements are made at several time points.</p>
@@ -578,7 +582,7 @@ C_{free}=\frac{1}{2}
 <p>Several options are available to construct this system. The ODEs could simply be typed out for every possible combination. It’s also possible to use the equilibrium <code>&lt;=kon:koff=&gt;</code> for all the interactions as well. However, there is another option that will handle the enumeration more easily. First we define the two mathematical sets <code>TSi</code> and <code>TSk</code>:</p>
 <pre><code>&lt;SET:TSi&gt; TL; TB; TS
 &lt;SET:TSk&gt; TL; TB; TS</code></pre>
-<p>With these defined we can then use the curly brace notation (<code>{ }</code>) with any of the descriptors used to construct a system. For example, the initial conditions for each of the target states are defined as parameters (<code>T0_TL</code>, <code>T0_TS</code>, <code>T0_TB</code>) in the model. These have to be identified as initial conditions using the <code>&lt;I&gt;</code> notation, and can be done with a single statement: This line:</p>
+<p>With these defined we can then use the curly brace notation (<code>{ }</code>) with any of the descriptors used to construct a system. For example, the initial conditions for each of the target states are defined as parameters (<code>T0_TL</code>, <code>T0_TS</code>, <code>T0_TB</code>) in the model. These have to be identified as initial conditions using the <code>&lt;I&gt;</code> notation, and can be done with a single statement. This line:</p>
 <pre><code>&lt;I&gt; {TSi} = T0_{TSi} </code></pre>
 <p>Expands to:</p>
 <pre><code>&lt;I&gt; TL = T0_TL
@@ -589,6 +593,47 @@ C_{free}=\frac{1}{2}
 <p>That uses only one of the sets (<code>TSi</code>) and will be expanded for each element in that set. To account for the formation of complexes that contain a drug molecule and two different target molecules, the following statement is used:</p>
 <pre><code>D_{TSi} + {TSk} &lt;=kon:koff=&gt; {TSk}_D_{TSi}</code></pre>
 <p>This statement contains two different sets (<code>TSi</code> and <code>TSk</code>). When multiple sets are encountered, every possible combination is evaluated</p>
+<div id="aligning-sets" class="section level4">
+<h4>Aligning Sets</h4>
+<p>By default sets will interpreted by evaulating every possible permutation as shown above. However, it may be desireable to pair or align sets. Take for example the transit compartments implemented by Lobo and Balthasar to delay the onset of drug effect on cancer cells [LB]. The traisnt compartment are implemented using a series of differential equations:</p>
+<p><span class="math display">\[
+  \frac{dK1}{dt} = (K-K1)\frac{1}{\tau} \\
+  \frac{dK2}{dt} = (K1-K2)\frac{1}{\tau} \\
+  \frac{dK3}{dt} = (K2-K3)\frac{1}{\tau} \\
+  \frac{dK4}{dt} = (K3-K4)\frac{1}{\tau} 
+\]</span></p>
+<p>It’s possible to code each of these individually, but it’s also possible to define these using mathematical set notation. We see that in the first equation K is paired or aligned with K1, and in the second it’s K1 and K2, etc. So first we define two sets of equal length whose elements are aligned:</p>
+<pre><code>&lt;SET:TRIN&gt;    K; K1; K2; K3
+&lt;SET:TROUT&gt;  K1; K2; K3; K4 </code></pre>
+<p>Next we write the <code>&lt;ODE:?&gt;?</code> statment in terms of these sets, but we use the <code>SIMINT_SET_ALIGN</code> function:</p>
+<pre><code>SIMINT_SET_ALIGN[TRIN;TROUT][&lt;ODE:{TROUT}&gt; 1.0/tau*({TRIN}-{TROUT})]</code></pre>
+<p>The first argument is the names of sets to align separated by a simicolon <code>;</code> and the second argment is the system file descriptor written in terms of these sets. This will be expanded internally into:</p>
+<pre><code>&lt;ODE:K1&gt; 1.0/tau*(K-K1)
+&lt;ODE:K2&gt; 1.0/tau*(K1-K2)
+&lt;ODE:K3&gt; 1.0/tau*(K2-K3)
+&lt;ODE:K4&gt; 1.0/tau*(K3-K4)</code></pre>
+</div>
+<div id="set-functions" class="section level4">
+<h4>Set Functions</h4>
+<p>It can be useful to perform operations over sets. To do this you can use the following functions:</p>
+<ul>
+<li><code>SIMINT_SET_SUM</code> is the mathematical equivalent of <span class="math inline">\(\sum_{SET}\)</span></li>
+<li><code>SIMINT_SET_PRODUCT</code> is the mathematical equivalent of <span class="math inline">\(\prod_{SET}\)</span></li>
+</ul>
+<p>These functions take two bracketed arguments. The first argument is the set name and the second argument is the mathematical relationship to be expanded. For example, consider a system that has been parameterized for several species. The variable <code>EN_Mouse</code> is 1 if the species is mouse and 0 otherwise. Similarly for <code>EN_Human</code>, <code>EN_Monkey</code>, etc. We have also defined the body weights as system parameters: <code>BW_Mouse</code> for the mouse, <code>BW_Human</code> for human, etc. Now we want to assign <code>BW</code> to the value of the currently seleted species (where <code>EN</code> for that species is 1). First we would define the species parameter set:</p>
+<pre><code>&lt;SET:SP&gt; Mouse; Rat; Monkey; Human</code></pre>
+<p>Next we would define the secondary parameter <code>BW</code> by summing the product of the Boolean species parameter and the body weight for that species:</p>
+<pre><code>&lt;As&gt; BW = SIMINT_SET_SUM[SP][EN_{SP}*BW_{SP}]</code></pre>
+</div>
+<div id="set-evaluation" class="section level4">
+<h4>Set Evaluation</h4>
+<p>Sets are evaulated in the following order:</p>
+<ul>
+<li>First set functions (<code>SIMINT_SET_SUM</code> and <code>SIMINT_SET_PRODUCT</code>) are evaulated.</li>
+<li>Next aligned sets are applied (<code>SIMINT_SET_ALIGN</code>)</li>
+<li>Lastly, remaining sets are evaulated for every permutation</li>
+</ul>
+</div>
 </div>
 </div>
 <div id="piecewise-continuous-functionsparameters-if" class="section level2">
@@ -632,12 +677,34 @@ C_{free}=\frac{1}{2}
 <p>To define the default output times for the ShinyApp and simulation scripts use the following:</p>
 <pre><code>&lt;OPT:output_times&gt; SIMINT_SEQ[0][100][1]</code></pre>
 </div>
+<div id="example-system-files" class="section level2">
+<h2>Example system files</h2>
+<p>These example system files can be found in the examples directory of the stand-alone analysis template (<a href="http://template.ubiquity.tools">ubiquity_template.zip</a>). Most can also be loaded form the R package (see the help for system_new).</p>
+<ul>
+<li><code>system-adapt.txt</code> - Parent/metabolite structural model taken from the ADAPT5 Users Manual [ADAPT]. This sytem is used in the estmation examples of the ubiquity workshop.</li>
+<li><code>system-glp_study.txt</code> - PK model paramterized for humans and NHPs, used as an example for GLP tox study design.</li>
+<li><code>system-mab_pk.txt</code> - Linear model of mAb PK for humans taken from [DM]. This model is used in the simulation examples of the ubiquity workshop.</li>
+<li><code>system-one_cmt_macro.txt</code> - One compartment model parameterizedf or macro constants (clearances and volumes).</li>
+<li><code>system-one_cmt_micro.txt</code> - One compartment model parameterizedf or micro constants (rates).</li>
+<li><code>system-pbpk.txt</code> - Implementation of large molecule PBPK model by Shah and Betts [SB]. This model provides good examples of how to use mathematical set notation.</li>
+<li><code>system-pbpk_template.txt</code> - Template containing the species parameter from [SB]. This can be used to construct systems parameterized for multiple species.</li>
+<li><code>system-pwc.txt</code> - Example of how to construct piece-wise secondary parameters (i.e. using if/then/else statements).</li>
+<li><code>system-sets.txt</code> - Example of how to parameterize systems with multiple parameter sets.</li>
+<li><code>system-tmdd.txt</code> - Example of how to code a TMDD model using either ODEs or process descriptors.</li>
+<li><code>system-tumor.txt</code> - Implementation of transit effect model in cancer cell inhibition from [LB]. This demonstrates how to use aligned mathematical sets.</li>
+<li><code>system-two_cmt_macro.txt</code> - Two compartment model parameterizedf or macro constants (clearances and volumes)</li>
+<li><code>system-two_cmt_micro.txt</code> - Two compartment model parameterizedf or micro constants (rates)</li>
+</ul>
+</div>
 <div id="references" class="section level2">
 <h2>References</h2>
 <ul>
-<li>[DM] <a href="https://doi.org/10.2165/11535960-000000000-00000">Dirks &amp; Meibohm Clin. PK 2010 Oct 1;49(10):633-59</a></li>
+<li>[ADAPT][<a href="https://bmsr.usc.edu/files/2013/02/ADAPT5-User-Guide.pdf" class="uri">https://bmsr.usc.edu/files/2013/02/ADAPT5-User-Guide.pdf</a>](<a href="https://bmsr.usc.edu/files/2013/02/ADAPT5-User-Guide.pdf" class="uri">https://bmsr.usc.edu/files/2013/02/ADAPT5-User-Guide.pdf</a>)</li>
+<li>[DM] <a href="https://doi.org/10.2165/11535960-000000000-00000">Dirks &amp; Meibohm Clin. PK (2010) Oct 1;49(10):633-59</a></li>
+<li>[LB] <a href="https://doi.org/10.1208/ps040442">Lobo, E.D. &amp; Balthasar, J.P. AAPS J (2002) 4, 212-222</a></li>
 <li>[MK] <a href="https://doi.org/10.1007/s11095-005-6650-0">Mager, D.E. &amp; Krzyzanski, W. Pharm Res (2005) 22: 1589.</a></li>
-<li>[VR] <a href="https://doi.org/10.1002/eji.1830180221">Vieira &amp; Rajewsky Eur J Immunol. 1988 Feb;18(2):313-6</a></li>
+<li>[SB] <a href="https://doi.org/10.1007/s10928-011-9232-2">Shah, D.K. &amp; Betts, A.M. JPKPD (2012) 39 (1), 67-86</a></li>
+<li>[VR] <a href="https://doi.org/10.1002/eji.1830180221">Vieira &amp; Rajewsky Eur J Immunol. (1988) Feb;18(2):313-6</a></li>
 </ul>
 </div>
 <div class="footnotes">

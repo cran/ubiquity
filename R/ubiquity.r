@@ -17,8 +17,8 @@
 #'@importFrom parallel stopCluster makeCluster
 #'@importFrom grid pushViewport viewport grid.newpage grid.layout
 #'@importFrom gridExtra grid.arrange
-#'@importFrom utils read.csv read.delim txtProgressBar setTxtProgressBar write.csv tail packageVersion
-#'@importFrom stats median qt
+#'@importFrom utils read.csv read.delim txtProgressBar setTxtProgressBar write.csv tail packageVersion sessionInfo
+#'@importFrom stats median qt var
 #'@importFrom MASS mvrnorm
 
 
@@ -54,9 +54,9 @@ build_system <- function(system_file          = "system.txt",
                          perlcmd              = "perl",
                          output_directory     = file.path(".", "output"),
                          temporary_directory  = file.path(".", "transient"),
-                         verbose              =  TRUE,
-                         ubiquity_app         =  FALSE,
-                         debug                =  TRUE){
+                         verbose              = TRUE,
+                         ubiquity_app         = FALSE,
+                         debug                = TRUE){
 
 # If we cannot find a system file we create an empty one 
 if(!file.exists(system_file)){
@@ -258,7 +258,8 @@ return(cfg)}
 #' example files for different sections of the workshop.
 #'
 #'@param section Name of the section of workshop to retrieve  ("Simulation")
-#'@param overwrite if \code{TRUE} the new system file will overwrite any existing files present
+#'@param overwrite if \code{TRUE} the new workshop files will overwrite any existing files present (\code{FALSE})
+#'@param copy_files if \code{TRUE} the files will be written to the output_directory, if \code{FALSE} only the names and locations of the files will be returned (\code{TRUE})
 #'@param output_directory directory where workshop files will be placed (getwd())
 #'@details Valid sections are "Simulation", "Estimation", "Titration" "Reporting", and "NCA"
 #'
@@ -269,19 +270,26 @@ return(cfg)}
 #'}
 workshop_fetch <- function(section          = "Simulation", 
                            overwrite        = FALSE,
+                           copy_files       = TRUE,
                            output_directory = getwd()){
   res = list()
   allowed = c("Simulation", "Estimation", "Titration", "Reporting", "Testing", "NCA")
 
   isgood = TRUE
   # This function only works if we're using the package
-  if(!(system.file(package="ubiquity") == "")){
-
+  if(!(system.file(package="ubiquity") == "") |
+       dir.exists(file.path("examples", "R"))){
     if(section %in% allowed){
     
-      src_dir = system.file("ubinc", "scripts", package="ubiquity")
-      csv_dir = system.file("ubinc", "csv",     package="ubiquity")
-      sys_dir = system.file("ubinc", "systems", package="ubiquity")
+      if(!(system.file(package="ubiquity") == "") ){
+        src_dir = system.file("ubinc", "scripts", package="ubiquity")
+        csv_dir = system.file("ubinc", "csv",     package="ubiquity")
+        sys_dir = system.file("ubinc", "systems", package="ubiquity")
+      } else {
+        src_dir = file.path("examples", "R")
+        csv_dir = file.path("examples", "R")
+        sys_dir = file.path("examples")
+      }
 
       sources      = c()
       destinations = c()
@@ -317,9 +325,13 @@ workshop_fetch <- function(section          = "Simulation",
          write_file   = c(TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE)
       } else if(section=="Reporting") {
          sources      = c(file.path(src_dir, "make_report_PowerPoint.R"), 
+                          file.path(src_dir, "make_report_Word.R"), 
                           file.path(sys_dir, "system-mab_pk.txt"))
-         destinations = c("make_report_PowerPoint.R", "system.txt")
-         write_file   = c(TRUE, TRUE)
+         destinations = c("make_report_PowerPoint.R",
+                          "make_report_Word.R", 
+                          "system.txt")
+
+         write_file   = c(TRUE, TRUE, TRUE)
       } else if(section=="Titration") {
          sources      = c(file.path(src_dir, "analysis_repeat_dosing.r"                     ),
                           file.path(src_dir, "analysis_repeat_infusion.r"                   ),
@@ -366,8 +378,14 @@ workshop_fetch <- function(section          = "Simulation",
       # up an error.
       if(!overwrite){
         for(fidx in 1:length(destinations)){
-          if(file.exists(file.path(output_directory, destinations[fidx]))){
-            write_file[fidx] = FALSE 
+          if(copy_files){
+            if(file.exists(file.path(output_directory, destinations[fidx]))){
+              write_file[fidx] = FALSE 
+            }
+          } else {
+              # If we're not copying the files then we set
+              # the write_file flag to FALSE
+              write_file[fidx] = FALSE
           }
         }
       }
@@ -396,7 +414,7 @@ workshop_fetch <- function(section          = "Simulation",
   } else {
     isgood = FALSE
     message("#> workshop_fetch()")
-    message("#> This function only works with the ubiquity package distribution ")
+    message("#> Unable to find ubiquity package or stand alone distribution files")
   }
 
 
@@ -411,16 +429,17 @@ return(res)}
 #'
 #' \itemize{
 #'   \item \code{"template"} - Empty system file template
+#'   \item \code{"adapt"} - Parent/metabolite model taken from the adapt manual used in estimation examples [ADAPT]
 #'   \item \code{"two_cmt_macro"} - Two compartment model parameterized in terms of clearances (macro constants)
 #'   \item \code{"one_cmt_macro"} - One compartment model parameterized in terms of clearances (macro constants)
 #'   \item \code{"two_cmt_micro"} - Two compartment model parameterized in terms of rates (micro constants)
 #'   \item \code{"one_cmt_micro"} - One compartment model parameterized in terms of rates (micro constants)
-#'   \item \code{"adapt"} - Parent/metabolite model taken from the adapt manual used in estimation examples
-#'   \item \code{"mab_pk"} - General compartmental model of mAb PK from Davda 2014 http://doi.org/10.4161/mabs.29095
-#'   \item \code{"pbpk"} - PBPK model of mAb disposition in mice from Shah 2012 
-#'   \item \code{"tmdd"} - Model of antibody with target-mediated drug disposition
+#'   \item \code{"mab_pk"} - General compartmental model of mAb PK from Davda 2014 [DG]
+#'   \item \code{"pbpk"} - PBPK model of mAb disposition in mice from Shah 2012 [SB]
+#'   \item \code{"pbpk_template"} - System parameters from Shah 2012 [SB] have been defined for all species along with the set notation to be used as a template for developing models with physiological parameters
 #'   \item \code{"pwc"} - Example showing how to make if/then or piece-wise continuous variables  
-#'   \item \code{"empty"} - Minimal system file used to perform other analyses (e.g, NCA)
+#'   \item \code{"tmdd"} - Model of antibody with target-mediated drug disposition
+#'   \item \code{"tumor"} - Transit tumor growth model taken from Lobo 2002 [LB] 
 #' }
 #'
 #'@param file_name name of the new file to create   
@@ -429,6 +448,19 @@ return(res)}
 #'@param output_directory \code{getwd()} directory where system file will be placed
 #'
 #'@return \code{TRUE} if the new file was created and \code{FALSE} otherwise
+#'
+#' @details 
+#'
+#' References
+#'
+#' \itemize{
+#' \item{[ADAPT]} Adapt 5 Users Guide \url{https://bmsr.usc.edu/files/2013/02/ADAPT5-User-Guide.pdf}
+#' \item{[DG]} Davda et. al. mAbs (2014) 6(4):1094-1102  \url{http://doi.org/10.4161/mabs.29095}
+#' \item{[LB]} Lobo, E.D. & Balthasar, J.P. AAPS J (2002) 4, 212-222  \url{https://doi.org/10.1208/ps040442}
+#' \item{[SB]} Shah, D.K. & Betts, A.M. JPKPD (2012) 39 (1), 67-86 \url{https://doi.org/10.1007/s10928-011-9232-2}
+#'}
+#'
+#'
 #'
 #'@examples
 #' \donttest{
@@ -443,46 +475,93 @@ system_new  <- function(file_name        = "system.txt",
                         overwrite        = FALSE,  
                         output_directory = getwd()){
 
- allowed = c("template",      "mab_pk",         "pbpk",          "pwc", 
-             "tmdd",          "adapt",          "one_cmt_micro", "one_cmt_macro",  
-             "two_cmt_micro", "two_cmt_macro",  "empty")
+ # Getting a list of the system files
+ sfs = system_new_list()
 
  isgood = FALSE
 
  output_file = file.path(output_directory, file_name)
 
- # first we look to see if the package is installed, if it's not
- # we look for files in the stand alone distribution locations
- if((system.file(package="ubiquity") != "")){
-   if(system_file == "template"){
-     file_path       = system.file("ubinc",    "templates", "system_template.txt", package="ubiquity")
-   } else {
-     file_path       = system.file("ubinc",    "systems", sprintf('system-%s.txt',system_file), package="ubiquity")
+ if(system_file %in% names(sfs)){
+   write_file = TRUE
+   # if ovewrite is false we check to see if the destination file exists. If it
+   # does exist, we ste write_file to false
+   if(!overwrite){
+     if(file.exists(output_file)){
+       message(paste("#> Error the file >", output_file, "< exists set overwrite=TRUE to overwrite", sep=""))
+       write_file = FALSE}
    }
- } 
- else {
-   if(system_file == "template"){
-     file_path       = file.path('library', 'templates',  'system_template.txt')
-   } else {
-     file_path       = file.path('examples', sprintf('system-%s.txt',system_file))
+
+    # if the source file exists and write_file is true then
+    # we try to copy the file
+    file_path = sfs[[system_file]][["file_path"]]
+    if(file.exists(file_path) & write_file){
+      isgood = file.copy(file_path, output_file, overwrite=TRUE)
+    }
+ } else{
+   message(paste("#> The system file tempalte >", system_file, "< is invalid", sep=""))
+   message(paste("#> Please choose one of the following:", sep=""))
+   for(sf in names(sfs)){
+     message(paste("#> ", stringr::str_pad(sf, pad=" ", side="right", width=15), "| ", sfs[[sf]][["description"]], sep=""))
    }
  }
-
- write_file = TRUE
- # if ovewrite is false we check to see if the destination file exists. If it
- # does exist, we ste write_file to false
- if(!overwrite){
-   if(file.exists(output_file)){
-     message(paste("#> Error the file >", output_file, "< exists set overwrite=TRUE to overwrite", sep=""))
-     write_file = FALSE}
- }
-
-  # if the source file exists and write_file is true then
-  # we try to copy the file
-  if(file.exists(file_path) & write_file){
-    isgood = file.copy(file_path, output_file, overwrite=TRUE)
-  }
 isgood}
+# -------------------------------------------------------------------------
+# -------------------------------------------------------------------------
+#'@export
+#'@title Fetch list of internal system templates
+#'
+#'@description  Returns a list of internal templates with descriptions of their contents and file locations
+#'
+#' @return list with the template names as the keys
+#' \itemize{
+#' \item{file_path} Full path to the system file
+#' \item{description} Description of what this system file provides
+#'}
+#'
+#'@examples
+#' # To get a list of systems
+#' systems = system_new_list()
+system_new_list  <- function(){
+
+ sfs = list(template      = list(file_path = NULL, description="Empty template file."),      
+            mab_pk        = list(file_path = NULL, description="Human antibody compartmental PK with IIV (Davda 2014)"),         
+            pbpk          = list(file_path = NULL, description="Full antibody PBPK model (Shah 2012)"),          
+            pwc           = list(file_path = NULL, description="Example of how to define picewise continuous functions (if/then statements)"), 
+            pbpk_template = list(file_path = NULL, description="Template file with PBPK parameters for multiple species coded mathematical set examples. "), 
+            tumor         = list(file_path = NULL, description="Tumor inhibition model (Lobo 2002) with mathematical set examples"),  
+            tmdd          = list(file_path = NULL, description="Full TMDD model with examples of how to code the same system as both ODEs and processes"),          
+            adapt         = list(file_path = NULL, description="Parent metabolite model taken from the Adapt user manual"),          
+            one_cmt_micro = list(file_path = NULL, description="One compartment model with micro-constants"), 
+            one_cmt_macro = list(file_path = NULL, description="One compartment model with macro-constants"),  
+            two_cmt_micro = list(file_path = NULL, description="Two compartment model with micro-constants"), 
+            two_cmt_macro = list(file_path = NULL, description="Two compartment model with macro-constants"))  
+
+  for(system_file in names(sfs)){
+
+    # If the package is installed we pull it from there:
+    if((system.file(package="ubiquity") != "")){
+      if(system_file == "template"){
+        file_path       = system.file("ubinc",    "templates", "system_template.txt", package="ubiquity")
+      } else {
+        file_path       = system.file("ubinc",    "systems", sprintf('system-%s.txt',system_file), package="ubiquity")
+      }
+    } 
+    else {
+      if(system_file == "template"){
+        file_path       = file.path('library', 'templates',  'system_template.txt')
+      } else {
+        file_path       = file.path('examples', sprintf('system-%s.txt',system_file))
+      }
+    }
+
+
+    # storing the file path
+    sfs[[system_file]][["file_path"]] = file_path
+  }
+
+sfs}
+
 # -------------------------------------------------------------------------
 
 # -------------------------------------------------------------------------
@@ -516,6 +595,7 @@ isgood}
 #'  \item{"Berkeley Madonna"} produces \code{system_berkeley_madonna.txt}: text file with the model and the currently selected parameter set in Berkeley Madonna format
 #'  \item{"Adapt"}            produces \code{system_adapt.for} and \code{system_adapt.prm}: Fortran and parameter files for the currently selected parameter set in Adapt format.
 #'}
+#'
 #'
 #'@examples
 #' \donttest{
@@ -916,6 +996,54 @@ return(cfg)
 system_fetch_parameters <- function(cfg){
   return(cfg$parameters$values)}
 
+#'@export
+#'@title Fetch Mathematical Set 
+#'
+#'@description
+#' Fetch the elements of the specified mathematical set that was defined in the system file.
+#'
+#'@param cfg ubiquity system object    
+#'@param set_name name of mathematical set
+#'
+#'@return A sequence containing the elements of the parameter set or NULL if if there was a problem.
+#'
+#'@examples
+#' \donttest{
+#' # Creating a system file from the pbpk example
+#' fr = system_new(file_name        = "system.txt", 
+#'                 system_file      = "pbpk", 
+#'                 overwrite        = TRUE, 
+#'                 output_directory = tempdir())
+#' 
+#' # Building the system 
+#' cfg = build_system(system_file  = file.path(tempdir(), "system.txt"),
+#'       output_directory          = file.path(tempdir(), "output"),
+#'       temporary_directory       = tempdir())
+#'
+#' # Fetching the contents of the ORG mathematical set
+#' ORG_elements = system_fetch_set(cfg, "ORG")
+#'}
+system_fetch_set <- function(cfg, set_name=NULL){
+  set_contents = NULL
+  isgood = TRUE
+
+  if(set_name %in% names(cfg$options$math_sets)){
+    set_contents = cfg$options$math_sets[[set_name]]
+  } else {
+    isgood = FALSE
+    vp(cfg, paste("Error: mathematical set: >", set_name ,"< was not defined", sep=""))
+    if(length(names(cfg$options$math_sets)) > 0){
+      vp(cfg, paste("The following sets are defined for this sytem")) 
+      vp(cfg, paste(names(cfg$options$math_sets), collapse=", "))
+    } else {
+      vp(cfg, "There are no sets defined for this system") }
+  }
+
+  if(!isgood){
+    vp(cfg, "system_fetch_set()")
+  }
+  
+  return(set_contents)}
 
 #'@export
 #'@title Fetch Variability Terms
@@ -1203,6 +1331,8 @@ return(cfg)}
 #' \item \code{"integrate_with"} - Specify if the ODE solver should use the Rscript (\code{"r-file"}) or compiled C (\code{"c-file"}), if the build process can compile and load the C version it will be the default otherwise it will switch over to the R script.
 #' \item \code{"output_times"} - Vector of times to evaulate the simulation (default \code{seq(0,100,1)}).
 #' \item \code{"solver"} - Selects the ODE solver: \code{"lsoda"} (default), \code{"lsode"}, \code{"vode"}, etc.; see the documentation for \code{\link[deSolve]{deSolve}} for an exhaustive list.
+#' \item \code{"sample_bolus_delta"} - Spacing used when sampling around bolus events (default \code{1e-6}). 
+#' \item \code{"sample_forcing_delta"} - Spacing used when sampling around forcing functions (infusion rates, covariates, etc) (default \code{1e-3}). 
 #' }
 #'
 #' \bold{\code{group="stochastic"}}
@@ -1309,8 +1439,8 @@ return(cfg)}
 #' For the different methods and control options, see the documentation for the \code{optim}
 #' and \code{optimx} libraries.
 #'
-#' To perform a global optimization you can install either the particle swarm (\code{\link[pso]{pso}})
-#' genetic algorithm (\code{\link[GA]{GA}}) libraries.
+#' To perform a global optimization you can install either the particle swarm (\code{pso})
+#' genetic algorithm (\code{GA}) libraries.
 #' To use the particle swarm set the \code{optimizer} and \code{method}:
 #'  
 #' \preformatted{
@@ -1710,6 +1840,7 @@ return(cfg)
 #' brackets above.
 #'
 #' \bold{Titration Environment}
+#'
 #' The \code{cond}, \code{action}, and \code{value} statements can use any variables available in
 #' the titration environment. If you want to perform complicated actions, you can
 #' simply create a user defined functions and pass it the variables from the
@@ -1718,20 +1849,23 @@ return(cfg)
 #'
 #' \bold{States and Parameters}
 #'
-#' The state values (at the current titration time), system parameters (\code{<P>}),
-#' static secondary parameters (\code{<As>}) and the initial value of covariates are
-#' available as the names specified in the \code{system.txt} file. Since system resets
-#' (\code{SI_TT_STATE}) are processed first, any changes made to states are the values
-#' that are active for other actions.
+#' System parameters (\code{<P>}), static secondary parameters (\code{<As>}) and 
+#' the initial value of covariates are available. Also the state values 
+#' (at the current titration time) can be used. These are all available as 
+#' the names specified in the \code{system.txt} file. Since system resets
+#' (\code{SI_TT_STATE}) are processed first, any changes made to states are 
+#' the values that are active for other actions.
 #'
 #' \bold{Internal Simulation Variables}
 #'
 #' Internal variables are used to control titration activities. These variables can also be used in the conditions and actions.
+#'
 #' \itemize{
 #'   \item \code{SIMINT_p} - list of system parameters
 #'   \item \code{SIMINT_cfg} - system configuration sent into the titration routine
-#'   \item \code{SIMINT_cfgtt}-systemconfigurationatthecurrenttitrationeventtime
+#'   \item \code{SIMINT_cfgtt}- system configuration at the current titration event time
 #'   \item \code{SIMINT_ttimes} - vector of titration times (in simulation units)
+#'   \item \code{SIMINT_ttime} - current titration time  (in simulation units)
 #'   \item \code{SIMINT_tt_ts} - list of time scales for the current titration
 #'   \item \code{SIMINT_history} - data frame tracking the history of conditions that evaluated true with the following structure:
 #'   \item \itemize{
@@ -1744,7 +1878,7 @@ return(cfg)
 #'
 #' \bold{Individual Simulations}
 #'
-#' To run an individual titration simulation use the follwoing:
+#' To run an individual titration simulation use the following:
 #'
 #' \preformatted{
 #'som = run_simulation_titrate(parameters, cfg)
@@ -3227,6 +3361,11 @@ if("iiv" %in% names(cfg) | !is.null(sub_file)){
                           .errorhandling='pass',
                        #  .options.snow=list(progress = myprogress),
                           .packages=foreach_packages) %dopar% {
+
+
+          # Setting the seed based on the subject ID and the 
+          # user specified seed: this applies to subject level 
+          set.seed(cfg$options$stochastic$seed + sub_idx)
     
           # If we're using the c-file we tell the spawned instances to load
           # the library 
@@ -3324,8 +3463,7 @@ if("iiv" %in% names(cfg) | !is.null(sub_file)){
         
           # Setting the seed based on the subject ID and the 
           # user specified seed: this applies to subject level 
-          # measurement error 
-          # set.seed(seed+sub_idx)
+          set.seed(cfg$options$stochastic$seed + sub_idx)
         
           # Pulling out subject level parameters
           parameters_subject = p$subjects$parameters[sub_idx,]
@@ -3762,6 +3900,61 @@ system_log_init = function (cfg){
 return(cfg)
 }
 
+#-------------------------------------------------------------------------
+#'@export
+#'@title Save variables to files     
+#'@description Triggered when debugging is enabled, this function will save
+#' the contents of values to the specified file name in the ubiquity temporary
+#' directory.
+#'@param cfg ubiquity system object    
+#'@param file_name name of the save file without the ".RData" extension
+#'@param values named list of variables to save
+#'
+#'@return Boolean variable indicating success 
+#'
+#'@examples
+#' \donttest{
+#' # Creating a system file from the mab_pk example
+#' fr = system_new(file_name        = "system.txt", 
+#'                 system_file      = "mab_pk", 
+#'                 overwrite        = TRUE, 
+#'                 output_directory = tempdir())
+#'
+#' # Building the system 
+#' cfg = build_system(system_file  = file.path(tempdir(), "system.txt"),
+#'       output_directory          = file.path(tempdir(), "output"),
+#'       temporary_directory       = tempdir())
+#'
+#' # enable debugging:
+#' cfg=system_set_option(cfg,group = "logging", 
+#'                          option = "debug", 
+#'                          value  = TRUE)
+#'
+#' # Saving the cfg variable 
+#' system_log_debug_save(cfg, 
+#'    file_name = 'my_file',
+#'    values = list(cfg=cfg))
+#'
+#'}
+system_log_debug_save = function (cfg, file_name = "my_file", values = NULL){
+
+   isgood = TRUE
+
+   if(cfg$options$logging$debug){
+     if(is.null(values)){
+       isgood = FALSE
+       vp(cfg, 'system_log_debug_save()')
+       vp(cfg, "values set to NULL")
+     } else if(!is.null(values)){
+       # file name to hold the debugging information
+       fn = file=file.path(cfg$options$misc$temp_directory, paste(file_name, ".RData", sep=""))
+       system_log_entry(cfg, paste("Debugging file:", fn))
+       save(values, file=fn)
+     }
+   }
+
+isgood}
+#-------------------------------------------------------------------------
 #'@export
 #'@title Add Log Entry
 #'@description Appends a specified line to the analysis log
@@ -3960,22 +4153,26 @@ return(cfg)}
 #' Each cohort has a name (eg \code{d5mpk}), and the dataset containing the
 #' information for this cohort is identified (the name defined in \code{\link{system_load_data}})
 #'
-#' \preformatted{cohort  = c()
-#'cohort$name    = "d5mpk"
-#'cohort$dataset = "pmdata"}
+#' \preformatted{cohort = list(
+#'   name         = "d5mpk",
+#'   dataset      = "pm_data",
+#'   inputs       = NULL,
+#'   outputs      = NULL)}
 #'
-#' Next it is necessary to define a filter (\code{cf} field) that can be
+#' Next if only a portion of the dataset applies to the current cohort, you
+#' can define a filter (\code{cf} field). This will be 
 #' applied to the dataset to only return values relevant to this cohort. For
 #' example, if we only want records where the column \code{DOSE} is 5 (for the 5
-#' mpk cohort). We can 
-#' \preformatted{cohort$cf$DOSE = c(5)}
+#' mpk cohort). We can use the following: 
 #'
+#' \preformatted{cohort[["cf"]]   = list(DOSE   = c(5))}
+#' 
 #' If the dataset has the headings \code{ID}, \code{DOSE} and \code{SEX}  and
 #' cohort filter had the following format:
-#'\preformatted{cohort$cf$ID   = c(1:4)
-#'
-#'cohort$cf$DOSE = c(5,10)
-#'cohort$cf$SEX  = c(1)}
+#' 
+#' \preformatted{cohort[["cf"]]   = list(ID    = c(1:4),
+#'                         DOSE  = c(5,10),
+#'                         SEX   = c(1))}
 #'
 #'It would be translated into the boolean filter:
 #'
@@ -3987,19 +4184,21 @@ return(cfg)}
 #' (\code{BW}), and you wanted to fix the body weight to 70 for the current
 #' cohort you would do the following:
 #'
-#' \preformatted{cohort$cp$BW = 70}
+#' \preformatted{cohort[["cp"]]   = list(BW        = c(70))}
 #'
 #' Note that you can only fix parameters that are not being estimated.
 #'
 #' Next we define the dosing for this cohort. It is only necessary to define
 #' those inputs that are non-zero. So if the data here were generated from
-#' animals given a single 5 mpk IV at time 0. If in the model this was defined
-#' using \code{<B:times>} and \code{<B:events>} dosing into the central
-#' compartment \code{Cp}, you would pass this information to the cohort in the
+#' animals given a single 5 mpk IV at time 0. Bolus dosing is defined 
+#' using \code{<B:times>} and \code{<B:events>}. If \code{Cp} is the central
+#' compartment, you would pass this information to the cohort in the
 #' following manner:
 #'
-#' \preformatted{cohort$inputs$bolus$Cp$AMT   = c(5)
-#'cohort$inputs$bolus$Cp$TIME  = c(0)}
+#' \preformatted{cohort[["inputs"]][["bolus"]] = list()
+#' cohort[["inputs"]][["bolus"]][["Cp"]] = list(TIME=NULL, AMT=NULL)
+#' cohort[["inputs"]][["bolus"]][["Cp"]][["TIME"]] = c( 0) 
+#' cohort[["inputs"]][["bolus"]][["Cp"]][["AMT"]]  = c( 5)}
 #'  
 #' Inputs can also include any infusion rates (\code{infusion_rates}) or
 #' covariates (\code{covariates}). Covariates will have the default value
@@ -4007,36 +4206,70 @@ return(cfg)}
 #' the same as those in the system file
 #'  
 #' Next we need to map the outputs in the model to the observation data in the
-#' dataset. Under \code{cohort.outputs} there is a field for each output. Here the field \code{ONAME}
-#' can be replaced with something more useful (like \code{PK}). The times and
-#' observations in the dataset are found in the \code{’TIMECOL’} column and the \code{’OBSCOL’} column
-#' (optional missing data option specified by -1). These are mapped to the model outputs (which
-#' MUST have the same units) ’TS’ and ’MODOUTPUT'. The variance model
-#' \code{'VARMOD'} is a string containing the variance model written in terms
-#' of the model prediction (\code{PRED}), variance parameters (defined with
-#' \code{<VP>} in the system file), and numbers. To do a least squares
-#  estimation use \code{'1'}, to weight against the prediction squared use
-#  \code{'PRED^2'}, to incorporate the variance parameter \code{SLOPE} use
-#  something like \code{'SLOPE*PRED^2'}.
+#' dataset. Under the \code{outputs} field there is a field for each output. Here 
+#' the field \code{ONAME} can be replaced with something more useful (like 
+#' \code{PK}). 
 #'
-#'\preformatted{cohort$outputs$ONAME$obs$time        = ’TIMECOL’      
-#'cohort$outputs$ONAME$obs$value       = ’OBSCOL’       
-#'cohort$outputs$ONAME$obs$missing     = -1         
-#'cohort$outputs$ONAME$model$time      = ’TS'       
-#'cohort$outputs$ONAME$model$value     = ’MODOUTPUT’  
-#'cohort$outputs$ONAME$model$variance  = ’VARMOD'}
+#' \preformatted{cohort[["outputs"]][["ONAME"]] = list()}
+#'
+#' If you want to further filter the dataset. Say for example you
+#' have two outputs and the \code{cf} applied above reduces your dataset
+#' down to both outputs. Here you can use the  "of" field to apply an "output filter"
+#' to further filter the records down to those that apply to the current output ONAME. 
+#' \preformatted{cohort[["outputs"]][["ONAME"]][["of"]] = list(
+#'        COLNAME          = c(),
+#'        COLNAME          = c())}
+#' If you do not need further filtering of data, you can you can just omit the field.
+#'
+#' Next you need to identify the columns in the dataset that contain your
+#' times and observations. This is found in the \code{obs} field for the 
+#' current observation:
+#' \preformatted{cohort[["outputs"]][["ONAME"]][["obs"]] = list(
+#'          time           = "TIMECOL",
+#'          value          = "OBSCOL",
+#'          missing        = -1)}
+#'
+#' The times and observations in the dataset are found in the \code{’TIMECOL’} column 
+#' and the \code{’OBSCOL’} column (optional missing data option specified by -1). 
+#'
+#' These observations in the dataset need to be mapped to the appropriate
+#' elements of your model defined in the system file. This is done with the
+#' \code{model} field:
+#'
+#' \preformatted{cohort[["outputs"]][["ONAME"]][["model"]] = list(
+#'          time           = "TS",       
+#'          value          = "MODOUTPUT",
+#'          variance       = "PRED^2")}
+#'
+#' First the system time scale indicated by the \code{TS} placeholder above
+#' must be specfied. The time scale must correspond to the data found in
+#' \code{TIMECOL} above.  Next the model output indicated by the \code{MODOUTPUT}
+#' placeholder needs to be specified. This is defined in the system file using
+#' \code{<O>} and should correspond to \code{OBSCOL} from the dataset. Lastly the
+#' \code{variance} field specifies the variance model. You can use the keyword
+#' \code{PRED} (the model predicted output) and any variance parameters. Some
+#' examples include:
+#'
+#' \itemize{
+#'   \item \code{variance = "1"} - Least squares
+#'   \item \code{variance = "PRED^2"} -  Weighted least squares proportional to the prediction squared
+#'   \item \code{variance = "(SLOPE*PRED)^2"}  Maximum likelihood estimation where \code{SLOPE} is defined as a variance parameter (\code{<VP>})
+#' }
+#'
+#' The following controls the plotting aspects associated with this output. The
+#' color, shape and line values are the values used by ggplot functions. 
+#'
+#' \preformatted{cohort[["outputs"]][["ONAME"]][["options"]] = list(
+#'         marker_color   = "black",
+#'         marker_shape   = 16,
+#'         marker_line    = 1 )}
+#' 
+#' If the cohort has multiple outputs, simply repeat the process above for the. 
+#' additional cohorts. The estimation vignettes contains examples of this. 
 #' 
 #' \bold{Note: Output names should be consistent between cohorts so they will be grouped together when plotting results.}
 #' 
-#' Optionally we can add information about the markers to use when plotting
-#' the output for this cohort:
-#'\preformatted{cohort$outputs$ONAME$options$marker_color   = 'black'
-#'cohort$outputs$ONAME$options$marker_shape   = 16
-#'cohort$outputs$ONAME$options$marker_line    = 1 }
-#'
-#' Lastly we define the cohort:
-#'
-#'@seealso Estimation vignette (\code{vignette("Estimation", package = "ubiquity")}) and \code{\link{system_select_set}}
+#'@seealso Estimation vignette (\code{vignette("Estimation", package = "ubiquity")})
 system_define_cohort <- function(cfg, cohort){
   
  if('options' %in% names(cohort)){
@@ -4967,6 +5200,8 @@ SIMINT_simulation_options$solver_opts$rtol               = 1e-6
 SIMINT_simulation_options$initial_conditions             = NA  
 SIMINT_simulation_options$parallel                       = "no"
 SIMINT_simulation_options$compute_cores                  = 1
+SIMINT_simulation_options$sample_bolus_delta             = 1e-6
+SIMINT_simulation_options$sample_forcing_delta           = 1e-3
 
 SIMINT_solver_opts = ""
 if(length(SIMINT_cfg$options$simulation_options$solver_opts)>0){
@@ -4989,7 +5224,7 @@ for(SIMINT_option in names(SIMINT_cfg$options$simulation_options)){
 # are observed. The way bolus values are handled means 
 # the system will be evaluated at each bolus event. However
 # other events must be accounted for explicitly. This includes 
-# the time varying inputs like infusion_rates and timevarying.
+# the time varying inputs like infusion_rates and timevarying parameters.
 # The times these events occur are stored in the 
 # important_times variable
 SIMINT_important_times = SIMINT_simulation_options$output_times
@@ -5037,7 +5272,8 @@ for(SIMINT_rate_name in names(SIMINT_cfg$options$inputs$infusion_rates)){
   SIMINT_my_ff = make_forcing_function(SIMINT_my_rate$times$values*SIMINT_rate_time_scale,
                                        SIMINT_my_rate$levels$values*SIMINT_rate_values_scale,
                                        "step", 
-                                       SIMINT_simulation_options$output_times)
+                                       SIMINT_simulation_options$output_times,
+                                       SIMINT_simulation_options$sample_forcing_delta)
   
   eval(parse(text=sprintf("SIMINT_forces$%s = SIMINT_my_ff", SIMINT_rate_name)))
 
@@ -5058,7 +5294,8 @@ for(SIMINT_cv_name in names(SIMINT_cfg$options$inputs$covariates)){
   SIMINT_my_ff = make_forcing_function(SIMINT_my_cv$times$values,
                                        SIMINT_my_cv$values$values,
                                        SIMINT_my_cv$cv_type, 
-                                       SIMINT_simulation_options$output_times)
+                                       SIMINT_simulation_options$output_times,
+                                       SIMINT_simulation_options$sample_forcing_delta)
   eval(parse(text=sprintf("SIMINT_forces$%s = SIMINT_my_ff", SIMINT_cv_name)))
   # adding the time values to important times
   SIMINT_important_times =   c(SIMINT_my_ff[,1], SIMINT_important_times)
@@ -5067,7 +5304,8 @@ for(SIMINT_cv_name in names(SIMINT_cfg$options$inputs$covariates)){
   SIMINT_my_ff = make_forcing_function(SIMINT_my_cv$times$values[1],
                                        SIMINT_my_cv$values$values[1],
                                        SIMINT_my_cv$cv_type, 
-                                       SIMINT_simulation_options$output_times)
+                                       SIMINT_simulation_options$output_times,
+                                       SIMINT_simulation_options$sample_forcing_delta)
   eval(parse(text=sprintf("SIMINT_forces$SIMINT_CVIC_%s = SIMINT_my_ff", SIMINT_cv_name)))
   # adding the time values to important times
   SIMINT_important_times =   c(SIMINT_my_ff[,1], SIMINT_important_times)
@@ -5082,7 +5320,10 @@ for(SIMINT_cv_name in names(SIMINT_cfg$options$inputs$covariates)){
 SIMINT_eventdata = eval(parse(text="system_prepare_inputs(SIMINT_cfg, SIMINT_parameters, SIMINT_force_times)"))
 
 # adding sample times around the bolus times to the important times
-SIMINT_important_times =   c(sample_around(SIMINT_eventdata$time, SIMINT_simulation_options$output_times), SIMINT_important_times)
+SIMINT_important_times =   c(sample_around(SIMINT_eventdata$time, 
+                                           SIMINT_simulation_options$output_times,
+                                           SIMINT_simulation_options$sample_bolus_delta), 
+                             SIMINT_important_times)
  
 
 # If important times were selected to be included then we set the output times
@@ -5982,6 +6223,17 @@ odtest = calculate_objective(cfg$estimation$parameters$guess, cfg, estimation=FA
     message(pstr)
     pest$sysup = paste(pest$sysup, pstr, "\n")
 
+    # Writing system update text to a file
+    sysup_file =file.path(cfg[["options"]][["misc"]][["output_directory"]], "system_update.txt")
+    fileConn<-file(sysup_file)
+    writeLines(pest$sysup, fileConn)
+    close(fileConn)
+
+    # Writing session information to a file
+    SI_file = file.path(cfg[["options"]][["misc"]][["output_directory"]], "sessionInfo.RData")
+    SI = sessionInfo()
+    save(SI, file=SI_file)
+
     }
 
   } else {
@@ -6138,7 +6390,7 @@ if(!is.null(plot_opts$purpose)){
 #def$dim$op$width = 10
 #def$dim$op$height= 8
 
-for(output in levels(erp$pred$OUTPUT)){
+for(output in unique(erp$pred$OUTPUT)){
 
   if(is.null(plot_opts$outputs[[output]]$yscale)){
    plot_opts$outputs[[output]]$yscale = def$yscale }
@@ -6160,12 +6412,12 @@ for(output in levels(erp$pred$OUTPUT)){
 #
 # plotting each output on the same axis
 #
-for(output in levels(erp$pred$OUTPUT)){
+for(output in unique(erp$pred$OUTPUT)){
   p = ggplot()
   color_string = c()
   output_scale = plot_opts$outputs[[output]]$yscale
 
-  for(cohort in levels(erp$pred$COHORT)){
+  for(cohort in unique(erp$pred$COHORT)){
     # temporary dataset with the output and cohort
     tds = erp$pred[erp$pred$OUTPUT == output & erp$pred$COHORT == cohort, ]
 
@@ -6255,13 +6507,13 @@ for(output in levels(erp$pred$OUTPUT)){
 # creating the observed vs predicted plot
 #
 
-for(output in levels(erp$pred$OUTPUT)){
+for(output in unique(erp$pred$OUTPUT)){
   p = ggplot()
   color_string = c()
   output_scale = plot_opts$outputs[[output]]$yscale
 
 
-  for(cohort in levels(erp$pred$COHORT)){
+  for(cohort in unique(erp$pred$COHORT)){
     # temporary dataset with the output and cohort
     tds = erp$pred[erp$pred$OUTPUT == output & erp$pred$COHORT == cohort, ]
 
@@ -6646,15 +6898,20 @@ f.destination = c()
 
 
 # Pulling the output directory from the ubiquity object
-output_directory = cfg$options$misc$output_directory 
+#output_directory = cfg$options$misc$output_directory 
+output_directory = cfg[["options"]][["misc"]][["output_directory"]]
 
 f.source      = c(f.source,      file.path(output_directory, "parameters_all.csv"))
 f.source      = c(f.source,      file.path(output_directory, "parameters_est.csv"))
 f.source      = c(f.source,      file.path(output_directory, "report.txt"        ))
+f.source      = c(f.source,      file.path(output_directory, "sessionInfo.RData" ))
+f.source      = c(f.source,      file.path(output_directory, "system_update.txt" ))
 
 f.destination = c(f.destination, file.path(output_directory, paste(name, "-parameters_all.csv", sep="")))
 f.destination = c(f.destination, file.path(output_directory, paste(name, "-parameters_est.csv", sep="")))
 f.destination = c(f.destination, file.path(output_directory, paste(name, "-report.txt"        , sep="")))
+f.destination = c(f.destination, file.path(output_directory, paste(name, "-sessionInfo.RData" , sep="")))
+f.destination = c(f.destination, file.path(output_directory, paste(name, "-system_update.txt" , sep="")))
 
 # clearing out the destination files to prevent old results from lingering
 for(fidx in 1:length(f.destination)){ 
@@ -7373,13 +7630,10 @@ gg_axis  = function(fo,
   if(any(is.null(ylim_min),is.null(ylim_min),is.null(xlim_min), is.null(xlim_max))){
     fob = ggplot_build(fo) }
 
-
-
   #
   # Finding the xlim values
   #
   if(any(is.null(xlim_min), is.null(xlim_max))){
-    fob = ggplot_build(fo)
     # looping through the figure object and pulling out all of the y data
     # to get the bounds on the y data
     xdata = c()
@@ -7396,14 +7650,7 @@ gg_axis  = function(fo,
     if(is.null(xlim_max)){
       xlim_max = max(xdata)
     }
-    
-  
   }
-
- #if(xaxis_scale){
- #  xlim_min = 10^floor(log10(xlim_min))
- #  xlim_max = 10^ceiling(log10(xlim_max))
- #}
 
   data_xlim = c(xlim_min, xlim_max)
 
@@ -7415,7 +7662,18 @@ gg_axis  = function(fo,
     # to get the bounds on the y data
     ydata = c()
     for(didx in 1:length(fob$data)){
-      ydata = c(ydata, fob$data[[didx]]$y)
+      # For geom_line/geom_point data
+      if("y" %in% names(fob$data[[didx]])){
+        ydata = c(ydata, fob$data[[didx]]$y)
+      }
+
+      # For geom_ribbon data
+      if("ymin" %in% names(fob$data[[didx]])){
+        ydata = c(ydata, fob$data[[didx]]$ymin)
+      }
+      if("ymax" %in% names(fob$data[[didx]])){
+        ydata = c(ydata, fob$data[[didx]]$ymax)
+      }
     }
  
     # Getting only thge positive y data
@@ -7429,14 +7687,7 @@ gg_axis  = function(fo,
     }
   }
 
- #if(yaxis_scale){
- #  ylim_min = 10^floor(log10(ylim_min))
- #  ylim_max = 10^ceiling(log10(ylim_max))
- #}
- 
   data_ylim = c(ylim_min, ylim_max)
-
-
 
   #
   # Formatting the y axis
@@ -7445,7 +7696,7 @@ gg_axis  = function(fo,
     if(!is.null(data_ylim)){
     
       # Creating the major ticks
-      ytick_major =  10^(log10(data_ylim[1]):log10(data_ylim[2]))
+      ytick_major =  10^(floor(log10(data_ylim[1])):ceiling(log10(data_ylim[2])))
      
       # Expanding the major tick labels beyond the current axis to make sure the
       # minor tick labels get filled out.
@@ -7498,7 +7749,7 @@ gg_axis  = function(fo,
   if(xaxis_scale){
     if(!is.null(data_xlim)){
       # Creating the major ticks
-      xtick_major =  10^(log10(data_xlim[1]):log10(data_xlim[2]))
+      xtick_major =  10^(floor(log10(data_xlim[1])):ceiling(log10(data_xlim[2])))
 
       # Expanding the major tick labels beyond the current axis to make sure the
       # minor tick labels get filled out.
@@ -7543,10 +7794,6 @@ gg_axis  = function(fo,
     fo = fo + annotation_logticks(sides='tb') 
   }
 
-
-
-
-
 fo}
 #/gg_axis
 #---------------------------------------------------------------------------
@@ -7584,7 +7831,6 @@ gg_log10_yaxis = function(fo,
                           ylim_max     = NULL, 
                           y_tick_label = TRUE,
                           x_tick_label = TRUE){
-
 
  fo =  gg_axis(fo=fo,
                yaxis_scale  = TRUE,
@@ -9333,19 +9579,19 @@ system_report_slide_section = function (cfg,
     if(!is.null(title)){
       if(meta$section$type$title == "ctrTitle"){
         tmprpt = ph_with(x=tmprpt,  location = ph_location_type(type = "ctrTitle"), value=title) 
-       } else if (meta$section$type$title == "body" & !is.null(meta$section$indices$title)) {
-        tmprpt = ph_with(x=tmprpt,  location = ph_location_type(type = "body"), index = meta$section$indices$title, value=title) 
        } else {
-         isgood = FALSE
+         tmprpt = ph_with(x=tmprpt,  location = ph_location_type(type = meta$section$type$title), 
+                                     index    = meta$section$indices$title, 
+                                     value    = title) 
        }
      } 
     if(!is.null(sub_title)){
       if(meta$section$type$sub_title == "subTitle"){
         tmprpt = ph_with(x=tmprpt,  location = ph_location_type(type = "subTitle"), value=sub_title) 
-       } else if (meta$section$type$sub_title == "body" & !is.null(meta$section$indices$sub_title)) {
-        tmprpt = ph_with(x=tmprpt,  location = ph_location_type(type = "body"), index = meta$section$indices$sub_title, value=sub_title) 
        } else {
-         isgood = FALSE
+        tmprpt = ph_with(x=tmprpt,  location = ph_location_type(type = meta$section$type$sub_title), 
+                                    index    = meta$section$indices$sub_title, 
+                                    value    = sub_title) 
        }
      }
 
@@ -9416,18 +9662,18 @@ system_report_slide_title   = function (cfg,
     # Adding Slide title/subtitle information
     if(meta$title$type$title == "ctrTitle"){
       tmprpt = ph_with(x=tmprpt,  location = ph_location_type(type = "ctrTitle"), value=title) 
-     } else if (meta$title$type$title == "body" & !is.null(meta$title$indices$title)) {
-      tmprpt = ph_with(x=tmprpt,  location = ph_location_type(type = "body"), index = meta$section$indices$title, value=title) 
      } else {
-       isgood = FALSE
+      tmprpt = ph_with(x=tmprpt,  location = ph_location_type(type = meta$title$type$title), 
+                                  index    = meta$title$indices$title, 
+                                  value    = title) 
      }
     if(!is.null(sub_title)){
       if(meta$title$type$sub_title == "subTitle"){
         tmprpt = ph_with(x=tmprpt,  location = ph_location_type(type = "subTitle"), value=sub_title) 
-       } else if (meta$title$type$sub_title == "body" & !is.null(meta$title$indices$sub_title)) {
-        tmprpt = ph_with(x=tmprpt,  location = ph_location_type(type = "body"), index = meta$section$indices$sub_title, value=sub_title) 
        } else {
-         isgood = FALSE
+        tmprpt = ph_with(x=tmprpt,  location = ph_location_type(type = meta$title$type$sub_title), 
+                                    index    = meta$title$indices$sub_title, 
+                                    value    = sub_title) 
        }
      }
 
@@ -9494,18 +9740,20 @@ system_report_ph_content = function(cfg, rpt, content_type, content, type, index
     else if(content_type == "list"){
       mcontent = matrix(data = content, ncol=2, byrow=TRUE)
       
-      # Initializing the placeholder
-      #rpt   = ph_empty(x=rpt, location=ph_location_type(type=type), index=index)
-      rpt   = ph_empty(x=rpt, location=ph_location_label(ph_label=ph_label), index=index)
-
-      # Getting the id_chr 
-      ss    = slide_summary(rpt)
-      id_chr= ss[length(ss[,1]),]$id
-      # Adding the bullets
+      # constructing the elements for unordered_list below
+      level_list  = c()
+      str_list    = c()
       for(lidx in 1:length(mcontent[,1])){
-        rpt = ph_add_par( x=rpt, id_chr= id_chr, level = as.numeric(mcontent[lidx, 1]))
-        rpt = ph_add_text(x=rpt, id_chr= id_chr, str   = mcontent[lidx, 2]) 
+        level_list  = c(level_list,  as.numeric(mcontent[lidx, 1]))
+        str_list    = c(str_list, mcontent[lidx, 2])
       }
+
+      # packing the list pieces into the ul object
+      ul = unordered_list(level_list = level_list, str_list = str_list)
+      # adding it to the report
+      rpt = ph_with(x  = rpt,  
+             location  = ph_location_label(ph_label=ph_label),
+             value     = ul) 
     }
     else if(content_type == "imagefile"){
       rpt = ph_with(x=rpt,  location=ph_location_label(ph_label=ph_label), value=external_img(src=content)) 
@@ -9598,9 +9846,9 @@ system_report_ph_content = function(cfg, rpt, content_type, content, type, index
      ft = align(ft, align=table_header_alignment, part="header")
      ft = align(ft, align=table_body_alignment,   part="body"  )
 
-     rpt = ph_with_flextable(x         = rpt,       type   = type, 
-                             index     = index,     value  = ft)
-    #rpt = ph_with(x=rpt,  location=ph_location_label(ph_label=ph_label), value=ft) 
+    #rpt = ph_with_flextable(x         = rpt,       type   = type, 
+    #                        index     = index,     value  = ft)
+    rpt = ph_with(x=rpt,  location=ph_location_label(ph_label=ph_label), value=ft) 
 
     }
    
@@ -10122,6 +10370,9 @@ md_info = data.frame(
 pos_start = c()
 pos_stop  = c()
 
+no_props_str = "officer::fp_text()"
+no_props     = officer::fp_text()
+
 # Saving the parsed paragraphs
 pgraphs_parse = list()
 
@@ -10161,8 +10412,8 @@ pgraphs_parse = list()
     if(is.null(locs)){
       pele     = list()
       pele$p_1 = list(text      = pgraph,
-                      props     = c("NULL"),
-                      props_cmd = "prop=NULL")
+                      props     = c(no_props_str),
+                      props_cmd = paste("prop=", no_props_str, sep=""))
     } else {
       # If locs isn't NULL we start working trough the markdown elements:
 
@@ -10196,8 +10447,8 @@ pgraphs_parse = list()
           #pele_tmp = list(text = pgraph)
           pele[[paste('p_', pele_idx, sep="")]] = 
                list(text      = substr(pgraph, start=1, stop=(gr_md$start-1)),
-                    props     = c("NULL"),
-                    props_cmd = "prop=NULL")
+                    props     = c(no_props_str),
+                    props_cmd = paste("prop=", no_props_str, sep=""))
           pele_idx = pele_idx + 1
         }
         #----------
@@ -10215,8 +10466,8 @@ pgraphs_parse = list()
                        list(text      = substr(pgraph, 
                                                start =(gr_md_prev[1, ]$end + 1),
                                                stop  =(gr_md[1, ]$start - 1)),
-                            props     = c("NULL"),
-                            props_cmd = "prop=NULL")
+                            props     = c(no_props_str),
+                            props_cmd = paste("prop=", no_props_str, sep=""))
             pele_idx = pele_idx + 1
           }
         }
@@ -10239,14 +10490,13 @@ pgraphs_parse = list()
         md_text = sub(md_text, pattern=md_end, replacement="")
 
         if(group == 4){
-        #browser()
         }
       
         # Now we save the text:
         pele[[paste('p_', pele_idx, sep="")]] = 
                    list(text      = md_text,
-                        props     = c(),
-                        props_cmd = NULL)
+                        props     = no_props,
+                        props_cmd = no_props)
       
         tmp_props = c()
         # Next we add the properties associated with the markdown
@@ -10330,8 +10580,8 @@ pgraphs_parse = list()
           if(text_end != ""){
             pele[[paste('p_', pele_idx, sep="")]] = 
                        list(text      = text_end,
-                            props     = c("NULL"),
-                            props_cmd = "prop=NULL")
+                            props     = c(no_props_str),
+                            props_cmd = paste("prop=", no_props_str, sep=""))
             pele_idx = pele_idx + 1
           }
         }
@@ -10700,11 +10950,12 @@ cfg}
 #'  to start and stop simulations and apply rules to control dosing and state-resets.
 #'@param SIMINT_p list of system parameters
 #'@param SIMINT_cfg ubiquity system object    
+#'@param SIMINT_dropfirst when \code{TRUE} it will drop the first sample point (prevents bolus doses from starting at 0)
 #'
 #'@return som
 #'@seealso \code{\link{system_new_tt_rule}}, \code{\link{system_set_tt_cond}} and the titration vignette (\code{vignette("Titration", package = "ubiquity")})
-run_simulation_titrate  <- function(SIMINT_p, SIMINT_cfg){
-  return(eval(parse(text="auto_run_simulation_titrate(SIMINT_p, SIMINT_cfg)")))
+run_simulation_titrate  <- function(SIMINT_p, SIMINT_cfg, SIMINT_dropfirst=TRUE){
+  return(eval(parse(text="auto_run_simulation_titrate(SIMINT_p, SIMINT_cfg, SIMINT_dropfirst)")))
 }
 
 #-------------------------------------------------------------------------
@@ -10721,9 +10972,10 @@ run_simulation_titrate  <- function(SIMINT_p, SIMINT_cfg){
 #'       \item  \code{"linear"} to linearly interpolate between the points
 #'        }
 #'@param output_times vector of simulation output times
+#'@param sample_delta_mult multiplier used to control the magnitude of spacing around event times
 #'
 #'@return matrix with two columns: first column is a vector of times and the second column is a vector of values
-make_forcing_function = function(times, values, type, output_times){
+make_forcing_function = function(times, values, type, output_times, sample_delta_mult=1e-3){
 
 if("step" == type){
 
@@ -10732,7 +10984,7 @@ if("step" == type){
  delta         = 250000*.Machine$double.eps
  if(length(times) > 1){
     offsets = ( times[2:length(times)] - times[1:length(times)-1])
-    delta = 0.001*min(offsets)
+    delta = sample_delta_mult*min(offsets)
  } 
 
  counter = 1
@@ -10783,6 +11035,7 @@ return(myforce)
 #' 
 #'@param tvals vector of event times
 #'@param ot    simualtion output times
+#'@param sample_delta_mult multiplier used to control the magnitude of spacing around and following event times
 #'
 #'@return vector of event times and added samples
 #'
@@ -10792,7 +11045,7 @@ return(myforce)
 #'stochastic section of the \code{\link{system_set_option}} help file.
 #'
 #'
-sample_around = function(tvals, ot){
+sample_around = function(tvals, ot, sample_delta_mult=1e-6){
 
 # removing any duplicates
 tvals = unique(tvals)
@@ -10800,7 +11053,7 @@ tvals = unique(tvals)
 # and using that as a basis for simulations
 tlength = abs(max(ot) - min(ot))
 tsample = tvals #c()
-delta   = 1e-6*tlength
+delta   = sample_delta_mult*tlength
 ffollow = 0.10 # percent to follow effects of event
 nfollow = 40   # number of sample times
 vfollow = seq(0, tlength*ffollow, tlength*ffollow/nfollow)
@@ -11016,6 +11269,7 @@ res}
 #' Nedelman, J. R., Gibiansky, E., & Lau, D. T. (1995). Applying Bailer's
 #' method for AUC confidence intervals to sparse sampling Pharmaceutical
 #' Research, 12(1), 124-128.
+#'
 #'@param conc_data data frame containing the sparse data 
 #'@param dsmap list with names specifying the columns:
 #' \itemize{
@@ -11025,22 +11279,34 @@ res}
 #' }
 #'@return list with the following elements
 #' \itemize{
-#'  \item \code{isgood} Boolean value indicating the result of the function call
-#'  \item \code{msg}    String contianing a description of any problems 
+#'  \item \code{isgood}   Boolean value indicating the result of the function call
+#'  \item \code{AUC}      Mean AUC
+#'  \item \code{var_AUC}  Variance of the AUC
+#'  \item \code{msgs}     Sequence of strings contianing a description of any problems 
+#'  \item \code{obss}     Internal of observations
+#'  \item \code{times}    Sequence of time corresponding to the rows of \code{obs}
+#'  \item \code{r}        number of observations at each time point (rows correspond to rows of \code{obs})
 #' }
 AUC_Bailers_method = function(conc_data  = NULL, 
                               dsmap      = list(NTIME       = "NTIME", 
                                                 CONC        = "CONC", 
                                                 ID          = "ID")){
-res    = list() 
-msg    = ''
-isgood = TRUE
+res     = list() 
+msgs    = c()
+isgood  = TRUE
+        
+AUC     = NULL
+var_AUC = NULL 
+r       = NULL
+obs     = NULL
+times   = NULL
+
 
 
 # Making sure that the conc_data input is a data frame
-if(is.data.frame(conc_data)){
+if(!is.data.frame(conc_data)){
   isgood = FALSE
-  msg = paste(msg, "conc_data must be a data frame")
+  msgs = c(msgs, "conc_data must be a data frame")
 }
     
 
@@ -11050,7 +11316,7 @@ req_cols = c("NTIME", "CONC", "ID")
 for(cname in req_cols){
   if(!(cname %in% names(dsmap))){
     isgood = FALSE 
-    msg = paste(msg, "column: >", cname, "< not foundin dsmap", sep="")
+    msgs = c(msgs, paste("column: >", cname, "< not foundin dsmap", sep=""))
   }
 }
 
@@ -11059,21 +11325,95 @@ if(isgood){
   for(cname in names(dsmap)){
     if(!(dsmap[[cname]] %in% names(conc_data))){
       isgood = FALSE
-      msg = paste(msg, "column: >", dsmap[[cname]], "< not found in conc_data", sep = "")
+      msgs = c( msgs, paste("column: >", dsmap[[cname]], "< not found in conc_data", sep = ""))
     }
   }
 }
 
 # Calculating the AUC
 if(isgood){
+  IDs     = unique(conc_data[[dsmap$ID]])
+  IDs_str = paste("sub_", IDs, sep="")
+  Times   = sort(unique(conc_data[[dsmap$NTIME]]))
 
+  K = length(Times)
+  R = length(IDs)
+
+  # Putting the data into sparse matrix form:
+  #  - A column for each ID
+  #  - Row for each time
+
+
+  obs   = matrix(ncol=R, nrow=K, data = -1)
+  colnames(obs) <- IDs_str
+
+  # Walking through the data to populating the concentrations
+  for(ID in IDs){
+    ID_str = paste("sub_", ID, sep="")
+    for(Time in Times){
+      if(nrow(conc_data[conc_data[[dsmap$NTIME]] == Time & conc_data[[dsmap$ID]] == ID, ]) == 1){
+         concval = conc_data[conc_data[[dsmap$NTIME]] == Time & conc_data[[dsmap$ID]] == ID, ][[dsmap$CONC]]
+         obs[Times == Time, ID_str] = concval
+      }
+      if(nrow(conc_data[conc_data[[dsmap$NTIME]] == Time & conc_data[[dsmap$ID]] ==  ID, ]) > 1){
+         isgood = FALSE
+         msgs = c(msgs, paste("At time", Time, " subject ", ID, " had more than 1 observation", sep="" ))
+      }
+    }
+  }
+
+
+  # calculating the weight vector
+  # 
+  #   w1 = (t(2)   -   t(1)  )/2 
+  #   wk = (t(k+1) -   t(k-1))/2    k = [2,K-1];
+  #   wk = (t(K)   -   t(K-1))/2 
+
+  
+  w   = rep(0, K)
+  r   = rep(0, K)
+  u   = rep(0, K)
+  ssq = rep(0, K)
+
+  w[1] = (Times[2]-Times[1  ])/2
+  w[K] = (Times[K]-Times[K-1])/2
+
+  for(k_idx in c(1:K)){
+
+    # Calculating the weights for the numbers in between
+    # the first and last elements
+    if((k_idx > 1) & (k_idx < K)){
+      w[k_idx] = (Times[k_idx+1]-Times[k_idx-1])/2
+    }
+    # nonzero elements for the row:
+    nz_elements =  as.numeric(obs[k_idx, obs[k_idx,] > 0 ])
+
+    # number of samples per time point
+    r[k_idx] = length(nz_elements)
+
+    # mean concentration for the current time point
+    u[k_idx] = mean(nz_elements)
+
+    # variance of the time point
+    ssq[k_idx] = var(nz_elements)
+
+  }
+
+  AUC     = sum(w*u)
+  var_AUC = sum(w^2*ssq/r)
 }
 
 if(!isgood){
-  msg = paste(msg, "AUC_Bailers_method()")
+  msgs = c(msgs, "AUC_Bailers_method()")
 }
 
-res$isgood = isgood
+res$AUC     = AUC
+res$var_AUC = var_AUC
+res$r       = r
+res$isgood  = isgood
+res$msgs    = msgs
+res$obs     = obs
+res$times   = times
 
 res}
 
@@ -11425,7 +11765,9 @@ system_nca_run = function(cfg,
         # subset
         tmpsum = NULL  
 
-        # Tmax and Cmax are taken directly from the dataset
+        # Tmax and Cmax are taken directly from the dataset. The min() below
+        # selects the first time that Cmax is observed if there are multiple
+        # occurrences of the Cmax
         Cmax            = max(SUBDS_DN$SI_CONC)
         Tmax            = min(SUBDS_DN[SUBDS_DN$SI_CONC == Cmax, ][[dsmap$NTIME]])
         if(!is.null(digits)){
@@ -11500,8 +11842,6 @@ system_nca_run = function(cfg,
           C0 = -1
         }
         
-        # Getting the Cmax and Tmax the min() below selects the first time
-        # that tmax is observed if there are multiple occurances of the tmax
         tmpsum$ID              = sub
         tmpsum$Nobs            = nrow(SUBDS_DN)
         tmpsum$Dose_Number     = dosenum
@@ -11520,7 +11860,30 @@ system_nca_run = function(cfg,
         tmpsum$AUCinf_pred     = -1
         tmpsum$AUCinf_obs      = -1
 
+        # If we're performing a sparse analysis we add the elements 
+        # to hold the results from Bailer's analysis
+        if(sparse){
+          tmpsum$AUCBailer       = -1
+          tmpsum$AUCBailer_var   = -1
+        }
+
+
         if(PROC_SUBDN){
+          if(sparse){
+            # Performing sparse analysis using Bailers method 
+            # The data frame used here is TMP_SS_DN which is all of the data
+            # for the current dose number 
+            res_Bailers  =  AUC_Bailers_method(conc_data  = TMP_SS_DN, 
+                                               dsmap      = list(NTIME       = dsmap$NTIME,
+                                                                 CONC        = dsmap$CONC, 
+                                                                 ID          = dsmap$ID))
+            # Appending the results to the summary table
+            if(res_Bailers$isgood){
+              tmpsum$AUCBailer       = res_Bailers$AUC
+              tmpsum$AUCBailer_var   = res_Bailers$var_AUC
+            }
+
+          }
           # Creating data frames for NCA
           if(extrap_C0){
             # If we have extrapolation selected we add the first time point to
@@ -11557,15 +11920,7 @@ system_nca_run = function(cfg,
 
           time_start = min(NCA_CONCDS$NTIME) 
           time_stop  = max(NCA_CONCDS$NTIME)
-         
-         #tryCatch(
-         # { 
-         #  NCA.conc = PKNCA::PKNCAconc(NCA_CONCDS, CONC~NTIME|ID)
-         # },
-         #  error = function(e) {
-         #  browser()
-         # })
-         #
+
           # Checking for duplicated times
           if(any(duplicated(NCA_CONCDS$NTIME))){
             vp(cfg, paste(ID_label, ": >", sub, "< Dose ", dosenum, " the following time values were repeated", sep="")) 
@@ -11628,22 +11983,27 @@ system_nca_run = function(cfg,
             
             # Summarizing everything for the current subject/dose to be used in
             # report generation later
-            lctmp = c(1, paste("Number of observations:"   , var2string(tmpsum$Nobs       , nsig_e=2, nsig_f=0) ),
-                      1, paste("Dose: "                    , var2string(tmpsum$Dose       , nsig_e=2, nsig_f=2) ), 
-                      1, paste("Dose concentration units: ", var2string(tmpsum$Dose_CU    , nsig_e=2, nsig_f=2) ), 
-                      1, paste("Cmax: "                    , var2string(tmpsum$Cmax       , nsig_e=2, nsig_f=2) ), 
-                      1, paste("C0: "                      , var2string(tmpsum$C0         , nsig_e=2, nsig_f=2) ), 
-                      1, paste("Tmax: "                    , var2string(tmpsum$Tmax       , nsig_e=2, nsig_f=2) ), 
-                      1, paste("Halflife: "                , var2string(tmpsum$halflife   , nsig_e=2, nsig_f=2) ),
-                      1, paste("Time interval: "           , toString(time_start), '-', toString(time_stop))) 
-            rctmp = c(1, paste("Vp  (observed):"           , var2string(tmpsum$Vp_obs     , nsig_e=2, nsig_f=2) ),
-                      1, paste("Vss (observed):"           , var2string(tmpsum$Vss_obs    , nsig_e=2, nsig_f=2) ),
-                      1, paste("Vss (predicted):"          , var2string(tmpsum$Vss_pred   , nsig_e=2, nsig_f=2) ), 
-                      1, paste("CL  (observed):"           , var2string(tmpsum$CL_obs     , nsig_e=2, nsig_f=2) ), 
-                      1, paste("CL  (predicted):"          , var2string(tmpsum$CL_pred    , nsig_e=2, nsig_f=2) ), 
-                      1, paste("AUC (0-last):"             , var2string(tmpsum$AUClast    , nsig_e=2, nsig_f=2) ), 
-                      1, paste("AUC (0-inf, predicted):"   , var2string(tmpsum$AUCinf_pred, nsig_e=2, nsig_f=2) ), 
-                      1, paste("AUC (0-inf, observed):"    , var2string(tmpsum$AUCinf_obs , nsig_e=2, nsig_f=2) ))
+            lctmp = c(1, paste("Number of observations:"        , var2string(tmpsum$Nobs           , nsig_e=2, nsig_f=0) ),
+                      1, paste("Dose: "                         , var2string(tmpsum$Dose           , nsig_e=2, nsig_f=2) ), 
+                      1, paste("Dose concentration units: "     , var2string(tmpsum$Dose_CU        , nsig_e=2, nsig_f=2) ), 
+                      1, paste("Cmax: "                         , var2string(tmpsum$Cmax           , nsig_e=2, nsig_f=2) ), 
+                      1, paste("C0: "                           , var2string(tmpsum$C0             , nsig_e=2, nsig_f=2) ), 
+                      1, paste("Tmax: "                         , var2string(tmpsum$Tmax           , nsig_e=2, nsig_f=2) ), 
+                      1, paste("Halflife: "                     , var2string(tmpsum$halflife       , nsig_e=2, nsig_f=2) ),
+                      1, paste("Time interval: "                , toString(time_start), '-', toString(time_stop))) 
+            rctmp = c(1, paste("Vp  (observed):"                , var2string(tmpsum$Vp_obs         , nsig_e=2, nsig_f=2) ),
+                      1, paste("Vss (observed):"                , var2string(tmpsum$Vss_obs        , nsig_e=2, nsig_f=2) ),
+                      1, paste("Vss (predicted):"               , var2string(tmpsum$Vss_pred       , nsig_e=2, nsig_f=2) ), 
+                      1, paste("CL  (observed):"                , var2string(tmpsum$CL_obs         , nsig_e=2, nsig_f=2) ), 
+                      1, paste("CL  (predicted):"               , var2string(tmpsum$CL_pred        , nsig_e=2, nsig_f=2) ), 
+                      1, paste("AUC (0-last):"                  , var2string(tmpsum$AUClast        , nsig_e=2, nsig_f=2) ), 
+                      1, paste("AUC (0-inf, predicted):"        , var2string(tmpsum$AUCinf_pred    , nsig_e=2, nsig_f=2) ), 
+                      1, paste("AUC (0-inf, observed):"         , var2string(tmpsum$AUCinf_obs     , nsig_e=2, nsig_f=2) ))
+
+            if(sparse){                                        
+              lctmp = c(lctmp, 1,  paste("AUC (Bailer):"       , var2string(tmpsum$AUCBailer      , nsig_e=2, nsig_f=2)))
+              rctmp = c(rctmp, 1,  paste("var(AUC (Bailer)):"  , var2string(tmpsum$AUCBailer_var  , nsig_e=2, nsig_f=2)))
+            }
 
             all = data.frame(c1=matrix(ncol=2, data=lctmp, byrow=TRUE)[,2], c2=matrix(ncol=2, data=rctmp, byrow=TRUE)[,2])
             
@@ -13263,3 +13623,5 @@ system_glp_scenario = function(cfg,
 
 cfg }
 #-------------------------------------------------------------------------
+
+

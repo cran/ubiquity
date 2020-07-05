@@ -2,7 +2,7 @@
 rm(list=ls())
 graphics.off()
 options(show.error.locations = TRUE)
-require("ggplot")
+require("ggplot2")
 require("doParallel")
 
 # If we are in a stand alone ubiquity distribution we run 
@@ -21,7 +21,9 @@ system_new(file_name="system.txt", system_file="mab_pk", overwrite = TRUE)
 # http://presentation.ubiquity.grok.tv
 
 # Rebuilding the system (R scripts and compiling C code)
-cfg = build_system()
+cfg = build_system(output_directory     = file.path(".", "output"),
+                   temporary_directory  = file.path(".", "transient"))
+
 
 # set name                  | Description
 # -------------------------------------------------------

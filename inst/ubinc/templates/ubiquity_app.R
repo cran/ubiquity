@@ -71,7 +71,13 @@ cfg$gui$sim_starttime = 0
 cfg$gui$colors$solid      = c("darkblue",    "firebrick1", "darkgreen",  "darkorange4" )
 cfg$gui$colors$region     = c("cadetblue1",  "pink"      , "olivedrab2", "darkorange"  )
 
+
+
 # Set options here:
+# If we're not deploying the app we enable debugging
+cfg=system_set_option(cfg,group = "logging", 
+                         option = "debug", 
+                         value  = !deploying)
 #  cfg=system_set_option(cfg,group = "simulation", 
 #                           option = "solver", 
 #                           value = "lsoda")
@@ -301,7 +307,7 @@ if( file.exists(sprintf('%s%ssystem.png', mywd, .Platform$file.sep))){
 
 # Lastly we identify to the underlying functions 
 # that we're running things through the App
-cfg$options$misc$operating_environment = 'gui'
+cfg$options$misc$operating_environment = "gui"
 
 # If no timescale has been set by the user
 # we set the time scale to the timescale of the 
@@ -315,7 +321,18 @@ if(is.null(cfg$options$misc$TS)){
 }
 
   
-# Saving the system inforamtion/state to a file
-save(cfg, file=file.path(cfg$options$misc$temp_directory, 'rgui', 'gui_state.RData'))
+# Saving the system information/state to a file
+save(cfg, file=file.path(cfg$options$misc$temp_directory, "rgui", "gui_state.RData"))
+# saving the deploying flag to a file in the temporary directory:
+# transient/app_base/DEPLOYING
+fileConn<-file(file.path(cfg$options$misc$temp_directory,"DEPLOYING"))
+if(deploying){
+  writeLines(c("TRUE"), fileConn)
+} else {
+  writeLines(c("FALSE"), fileConn)
+}
+close(fileConn)
+
+# Lastly if we're not deploying we run the app 
 if(!deploying){
   runApp(mywd)} 

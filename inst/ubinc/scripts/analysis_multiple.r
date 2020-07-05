@@ -11,7 +11,9 @@ if(file.exists(file.path('library', 'r_general', 'ubiquity.R'))){
   library(ubiquity) }
 
 # Rebuilding the system (R scripts and compiling C code)
-cfg = build_system()
+cfg = build_system(output_directory     = file.path(".", "output"),
+                   temporary_directory  = file.path(".", "transient"))
+
 
 # set name   | Description
 # -------------------------------------------------------
@@ -44,10 +46,9 @@ cfg=system_set_option(cfg, group  = "simulation",
 cfg=system_set_option(cfg, group  = "stochastic",
                            option = "nsub",
                            value  = 200)
-                           
 
 # Uncomment the following to parallelize the simulations
-# 
+# library(doParallel)
 # cfg=system_set_option(cfg, group  = "simulation",
 #                            option = "parallel",    
 #                            value  = "multicore")
@@ -55,6 +56,7 @@ cfg=system_set_option(cfg, group  = "stochastic",
 # cfg=system_set_option(cfg, group  = "simulation",
 #                            option = "compute_cores", 
 #                            value  = detectCores() - 1)
+# 
 som  = simulate_subjects(parameters, cfg)
 
 graphics.off()
@@ -72,7 +74,7 @@ myfig = ggplot(som$tcsummary, aes(x=ts.days, y=o.C_ng_ml.mean)) +
                guides(fill=FALSE) 
 
 
-myfig = gg_log10_yaxis(myfig, ylim_min=1e3, ylim_max=3e5)
+myfig = gg_log10_yaxis(myfig , ylim_min=1e3, ylim_max=3e5)
 myfig = prepare_figure("print", myfig)
 print(myfig)
 

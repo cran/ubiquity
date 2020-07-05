@@ -11,7 +11,8 @@ if(file.exists(file.path('library', 'r_general', 'ubiquity.R'))){
   library(ubiquity) }
 
 # Rebuilding the system (R scripts and compiling C code)
-cfg = build_system()
+cfg = build_system(output_directory     = file.path(".", "output"),
+                   temporary_directory  = file.path(".", "transient"))
 
 # set name   | Description
 # -------------------------------------------------------
@@ -47,7 +48,7 @@ library(ggplot2)
 myfig = ggplot() + 
         geom_line(data=som$simout, aes(x=ts.days,   y=C_ng_ml), color="red")  +
         xlab("Time (days)")+
-        ylab("C (ng/ml) (units)")
+        ylab("C (ng/ml)")
 myfig = gg_log10_yaxis(myfig, ylim_min=1e3, ylim_max=3e5)
 myfig = prepare_figure("print", myfig)
 print(myfig)

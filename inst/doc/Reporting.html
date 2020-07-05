@@ -1,19 +1,18 @@
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
 
 <head>
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 
 <meta name="author" content="John Harrold &amp; Anson Abraham" />
 
-<meta name="date" content="2020-01-20" />
+<meta name="date" content="2020-07-05" />
 
 <title>Report Generation</title>
 
@@ -118,9 +117,6 @@ padding-right: 2em;
 font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
 font-size: 14px;
 line-height: 1.35;
-}
-#header {
-text-align: center;
 }
 #TOC {
 clear: both;
@@ -289,7 +285,8 @@ code > span.st { color: #d14; }
 code > span.co { color: #888888; font-style: italic; } 
 code > span.ot { color: #007020; } 
 code > span.al { color: #ff0000; font-weight: bold; } 
-code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61717; background-color: #e3d2d2; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
 </style>
 
 
@@ -304,7 +301,7 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 
 <h1 class="title toc-ignore">Report Generation</h1>
 <h4 class="author">John Harrold &amp; Anson Abraham</h4>
-<h4 class="date">2020-01-20</h4>
+<h4 class="date">2020-07-05</h4>
 
 
 
@@ -563,9 +560,9 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <a class="sourceLine" id="cb18-4" title="4">                       <span class="dt">text    =</span> <span class="st">&quot;This is plain text&quot;</span>))</a></code></pre></div>
 <p>You can also format text using two methods.First you can use the <code>fpar</code> command from <code>officer</code>:</p>
 <div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb19-1" title="1">fpartext =<span class="st"> </span><span class="kw">fpar</span>(</a>
-<a class="sourceLine" id="cb19-2" title="2"><span class="kw">ftext</span>(<span class="st">&quot;Formatted text can be created using the &quot;</span>, <span class="dt">prop=</span><span class="ot">NULL</span>),</a>
+<a class="sourceLine" id="cb19-2" title="2"><span class="kw">ftext</span>(<span class="st">&quot;Formatted text can be created using the &quot;</span>, <span class="dt">prop=prop=</span>officer<span class="op">::</span><span class="kw">fp_text</span>()),</a>
 <a class="sourceLine" id="cb19-3" title="3"><span class="kw">ftext</span>(<span class="st">&quot;fpar &quot;</span>, <span class="dt">prop=</span>officer<span class="op">::</span><span class="kw">fp_text</span>(<span class="dt">color=</span><span class="st">&quot;green&quot;</span>)),</a>
-<a class="sourceLine" id="cb19-4" title="4"><span class="kw">ftext</span>(<span class="st">&quot;command from the officer package.&quot;</span>, <span class="dt">prop=</span><span class="ot">NULL</span>))</a>
+<a class="sourceLine" id="cb19-4" title="4"><span class="kw">ftext</span>(<span class="st">&quot;command from the officer package.&quot;</span>, <span class="dt">prop=prop=</span>officer<span class="op">::</span><span class="kw">fp_text</span>()))</a>
 <a class="sourceLine" id="cb19-5" title="5"></a>
 <a class="sourceLine" id="cb19-6" title="6">cfg =<span class="st"> </span><span class="kw">system_report_doc_add_content</span>(cfg, </a>
 <a class="sourceLine" id="cb19-7" title="7">  <span class="dt">content_type  =</span> <span class="st">&quot;text&quot;</span>,</a>

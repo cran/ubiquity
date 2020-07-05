@@ -1,4 +1,4 @@
-## ----setup, include=FALSE------------------------------------------------
+## ----setup, include=FALSE-----------------------------------------------------
 knitr::opts_chunk$set(echo = TRUE, message=FALSE, eval=FALSE)
 require(ubiquity)
 require(ggplot2)
@@ -7,13 +7,13 @@ require(gridExtra)
 # The presim variable will contain presimualted data when eval is set to true
 presim_loaded = FALSE
 
-## ----echo=FALSE, results=FALSE-------------------------------------------
+## ----echo=FALSE, results=FALSE------------------------------------------------
 #    presim= list()
 #    if(file.exists("NCA_presim.RData")){
 #      file.remove("NCA_presim.RData")
 #    }
 
-## ----echo=FALSE, results=FALSE, eval=TRUE--------------------------------
+## ----echo=FALSE, results=FALSE, eval=TRUE-------------------------------------
 if(file.exists("NCA_presim.RData")){
   load("NCA_presim.RData")
   presim_loaded = TRUE
@@ -59,13 +59,13 @@ if(file.exists("NCA_presim.RData")){
 #    }
 #  }
 
-## ----results="hide", warning=FALSE, echo=FALSE---------------------------
+## ----results="hide", warning=FALSE, echo=FALSE--------------------------------
 #  # When eval is set to TRUE we save the presimulated results
 #    presim$plots$som_smooth = som_smooth
 #    presim$plots$som_sample = som_sample
 #    presim$plots$polydf     = polydf
 
-## ----results="hide", warning=FALSE, echo=FALSE, eval=TRUE----------------
+## ----results="hide", warning=FALSE, echo=FALSE, eval=TRUE---------------------
 if(presim_loaded){
   som_smooth = presim$plots$som_smooth 
   som_sample = presim$plots$som_sample 
@@ -111,7 +111,7 @@ gridExtra::grid.arrange(p_AUC, p_AUMC, ncol=2)
 #  cfg = system_load_data(cfg, dsname     = "PKDATA",
 #                              data_file  = "pk_all_sd.csv")
 
-## ----echo=FALSE, fig.align="center", eval=TRUE---------------------------
+## ----echo=FALSE, fig.align="center", eval=TRUE--------------------------------
 rhandsontable(read.csv(system.file("ubinc", "csv", "pk_all_sd.csv" , package="ubiquity")), width=500, height=200)
 
 ## ----warning=FALSE, message=FALSE, echo=TRUE, error=FALSE, results="hide", fig.width=8, fig.height=4----
@@ -127,16 +127,16 @@ rhandsontable(read.csv(system.file("ubinc", "csv", "pk_all_sd.csv" , package="ub
 #                                                  ID      = "ID"),
 #                             digits        = 3)
 
-## ----warning=FALSE, message=FALSE, echo=FALSE, error=FALSE---------------
+## ----warning=FALSE, message=FALSE, echo=FALSE, error=FALSE--------------------
 #  nca_summary = read.csv(file.path("output", "pk_single_dose-nca_summary-pknca.csv"))
 #  presim$sd$nca_summary = nca_summary
 
-## ----results="hide", warning=FALSE, echo=FALSE, eval=TRUE----------------
+## ----results="hide", warning=FALSE, echo=FALSE, eval=TRUE---------------------
 if(presim_loaded){
   nca_summary = presim$sd$nca_summary
 }
 
-## ----echo=FALSE, fig.align="center", eval=TRUE---------------------------
+## ----echo=FALSE, fig.align="center", eval=TRUE--------------------------------
 rhandsontable(nca_summary,  width=500, height=200)
 
 ## ----warning=FALSE, message=FALSE, eval=FALSE, echo=TRUE, error=FALSE, results="hide", fig.width=8, fig.height=4----
@@ -155,7 +155,7 @@ rhandsontable(nca_summary,  width=500, height=200)
 #  cfg = system_load_data(cfg, dsname     = "PKDATA",
 #                              data_file  = "pk_all_md.csv")
 
-## ----echo=FALSE, fig.align="center", eval=TRUE---------------------------
+## ----echo=FALSE, fig.align="center", eval=TRUE--------------------------------
 rhandsontable(read.csv(system.file("ubinc", "csv", "pk_all_md.csv" , package="ubiquity")), width=500, height=200)
 
 ## ----warning=FALSE, message=FALSE, echo=FALSE, error=FALSE, results="hide", fig.width=8, fig.height=4----
@@ -190,16 +190,16 @@ rhandsontable(read.csv(system.file("ubinc", "csv", "pk_all_md.csv" , package="ub
 #  cfg = system_report_nca(cfg, analysis_name = "pk_multiple_dose")
 #  system_report_save(cfg, output_file=file.path("output", "pk_multiple_dose-report.pptx"))
 
-## ----warning=FALSE, message=FALSE, echo=FALSE, error=FALSE---------------
+## ----warning=FALSE, message=FALSE, echo=FALSE, error=FALSE--------------------
 #  nca_summary = read.csv(file.path("output", "pk_multiple_dose-nca_summary-pknca.csv"))
 #  presim$md$nca_summary = nca_summary
 
-## ----results="hide", warning=FALSE, echo=FALSE, eval=TRUE----------------
+## ----results="hide", warning=FALSE, echo=FALSE, eval=TRUE---------------------
 if(presim_loaded){
   nca_summary = presim$md$nca_summary
 }
 
-## ----echo=FALSE, fig.align="center", eval=TRUE---------------------------
+## ----echo=FALSE, fig.align="center", eval=TRUE--------------------------------
 rhandsontable(nca_summary,  width=500, height=200)
 
 ## ----warning=FALSE, message=FALSE, echo=TRUE, error=FALSE, results="hide", fig.width=8, fig.height=4----
@@ -207,7 +207,7 @@ rhandsontable(nca_summary,  width=500, height=200)
 #  cfg = system_load_data(cfg, dsname     = "PKDATA",
 #                              data_file  = "pk_sparse_sd.csv")
 
-## ----echo=FALSE, fig.align="center", eval=TRUE---------------------------
+## ----echo=FALSE, fig.align="center", eval=TRUE--------------------------------
 rhandsontable(read.csv(system.file("ubinc", "csv", "pk_sparse_sd.csv" , package="ubiquity")), width=500, height=200)
 
 ## ----warning=FALSE, message=FALSE, echo=FALSE, error=FALSE, results="hide", fig.width=8, fig.height=4----
@@ -248,18 +248,18 @@ rhandsontable(read.csv(system.file("ubinc", "csv", "pk_sparse_sd.csv" , package=
 #  cfg = system_report_nca(cfg, analysis_name = "pk_sparse")
 #  system_report_save(cfg=cfg, output_file=file.path("output", "pk_sparse-report.pptx"))
 
-## ----warning=FALSE, message=FALSE, echo=FALSE, error=FALSE---------------
+## ----warning=FALSE, message=FALSE, echo=FALSE, error=FALSE--------------------
 #  nca_summary = read.csv(file.path("output", "pk_sparse-nca_summary-pknca.csv"))
 #  presim$sparse$nca_summary = nca_summary
 
-## ----results="hide", warning=FALSE, echo=FALSE, eval=TRUE----------------
+## ----results="hide", warning=FALSE, echo=FALSE, eval=TRUE---------------------
 if(presim_loaded){
   nca_summary = presim$sparse$nca_summary
 }
 
-## ----echo=FALSE, fig.align="center", eval=TRUE---------------------------
+## ----echo=FALSE, fig.align="center", eval=TRUE--------------------------------
 rhandsontable(nca_summary,  height=150, width=500)
 
-## ----warning=FALSE, message=FALSE, echo=FALSE----------------------------
+## ----warning=FALSE, message=FALSE, echo=FALSE---------------------------------
 #  save(presim, file="NCA_presim.RData")
 
