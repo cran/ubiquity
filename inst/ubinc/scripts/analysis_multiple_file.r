@@ -63,6 +63,7 @@ cfg=system_set_option(cfg, group  = "stochastic",
 
 # Uncomment the following to parallelize the simulations
 # library(doParallel)
+# 
 # cfg=system_set_option(cfg, group  = "simulation",
 #                            option = "parallel",    
 #                            value  = "multicore")
@@ -70,6 +71,12 @@ cfg=system_set_option(cfg, group  = "stochastic",
 # cfg=system_set_option(cfg, group  = "simulation",
 #                            option = "compute_cores", 
 #                            value  = detectCores() - 1)
+
+
+# This strips the output collected down to only the output C_ng_ml
+# cfg = system_set_option(cfg, group="stochastic", option="ssp",     value=list())
+# cfg = system_set_option(cfg, group="stochastic", option="states",  value=list())
+# cfg = system_set_option(cfg, group="stochastic", option="outputs", value=c("C_ng_ml"))
 
 som  = simulate_subjects(parameters, cfg)
 # 
