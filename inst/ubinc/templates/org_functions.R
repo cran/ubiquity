@@ -18,21 +18,37 @@ org_pptx_meta = function(){
 #
 # Next initialize a report using your organizational template:
 #
-# cfg = system_report_init(cfg, rpttype="PowerPoint", template="myOrg.pptx")
+# cfg = system_report_init(cfg, template="myOrg.pptx")
 #
 # Now generate an annotated layout of your template:
 #
 # system_report_view_layout(cfg, output_file="layout.pptx")
 #
 # Open the layout.pptx file in PowerPoint and fill in the information below
-# for each of the slide masters:
+# for each of the slide masters.
+#
+# Once that is done you can use your organization template in the following
+# way:
+#   - source your myOrg.R file
+#   - initialize the report with the correct template and meta functions
+# 
+# source(myOrg.R)
+# cfg = system_report_init(cfg, 
+#         meta     = org_pptx_meta(),
+#         template = "myOrg.pptx")
+# 
 #--------------------------------------------------------------------
 # default reporting options
 # 
 # Set sub_title fields to NULL if they do not exist in the template
 #
 
-meta = list()
+meta = list(title          = list(),
+            section        = list(),
+            content        = list(),
+            two_col        = list(),
+            md_def         = list())
+
 # this is the information the title slide
 meta$title$layout$general                      = "title_slide"
 meta$title$master$general                      = "Office Theme"             
@@ -129,6 +145,34 @@ meta$two_col$ph_labels$text_sub_title         = "Content Placeholder 10"
 meta$two_col$ph_labels$text_left              = "Content Placeholder 2" 
 meta$two_col$ph_labels$text_right             = "Content Placeholder 3" 
 
+
+# When using markdown text you have to specify the default properties of text
+# for the Table 
+#
+# Table_Labels refers to the footers and headers while Table is the defaults
+# for the body of the table
+meta[["md_def"]][["Table_Labels"]] = list(
+        color          = "black",
+        font.size      = 12,
+        bold           = TRUE, 
+        italic         = FALSE,
+        underlined     = FALSE,
+        font.family    = "Helvetica",
+        vertical.align = "baseline",
+        shading.color  = "transparent")
+
+
+meta[["md_def"]][["Table"]] = list(
+        color          = "black",
+        font.size      = 12,
+        bold           = FALSE,
+        italic         = FALSE,
+        underlined     = FALSE,
+        font.family    = "Helvetica",
+        vertical.align = "baseline",
+        shading.color  = "transparent")
+
+
 return(meta)}
 
 
@@ -144,48 +188,189 @@ org_docx_meta = function(){
 #
 # Next initialize a report using your organizational template:
 #
-# cfg = system_report_init(cfg, rpttype="Word", template="myOrg.docx")
+# cfg = system_report_init(cfg, template="myOrg.docx")
 #
 # Now generate an annotated layout of your template:
 #
 # system_report_view_layout(cfg, output_file="layout.docx")
 #
-# Open the layout.docx file in Word and fill in the information below for each
-# of the placeholders and styles
-meta = list()
+# Open the layout.docx file in Word and fill in the information below
+# for each of the placeholders, styles, captions and markdown definitions
+#
+# Once that is done you can use your organization template in the following
+# way:
+#   - source your myOrg.R file
+#   - initialize the report with the correct template and meta functions
+# 
+# source(myOrg.R)
+# cfg = system_report_init(cfg, 
+#         meta     = org_docx_meta(),
+#         template = "myOrg.docx")
 
+meta = list(ph_content = list(),
+            styles     = list(),
+            captions   = list(),
+            md_def     = list())
 
 # If your document contains placeholders you can put default values for those
 # placeholders here. 
 #
 # The ph_content field should be the placeholder without the surrounding
-# offset characters. So for example if you had U__HEADER_LEFT__U in your
+# offset characters. So for example if you had ===HEADERLEFT=== in your
 # doucment template you would use the following to replace that with empty
 # content by default:
 #
 # For each placeholder there should be a location and a content element. The
 # location can be either "header", "footer" or "body", and the content will be
 # the default value. 
-meta$ph_content$HeaderLeft$location   = "header"
-meta$ph_content$HeaderLeft$content    = ""
+meta[["ph_content"]][["HEADERLEFT"]][["location"]]   = "header"
+meta[["ph_content"]][["HEADERLEFT"]][["content"]]    = ""
 
 # You'll need to create a template with the following styles defined.
-meta$styles$Normal                    = "Normal"
-meta$styles$Code                      = "Code"
-meta$styles$TOC                       = "toc 1" 
-meta$styles$Heading_1                 = "heading 1"
-meta$styles$Heading_2                 = "heading 2"
-meta$styles$Heading_3                 = "heading 3"
-meta$styles$Table                     = "Table Grid"
-meta$styles$Table_Caption             = "table title"
-meta$styles$Figure_Caption            = "graphic title" 
+meta[["styles"]][["Normal"]]                 = "Normal"
+meta[["styles"]][["Code"]]                   = "Code"
+meta[["styles"]][["TOC"]]                    = "TOC 1" 
+meta[["styles"]][["Heading_1"]]              = "heading 1"
+meta[["styles"]][["Heading_2"]]              = "heading 2"
+meta[["styles"]][["Heading_3"]]              = "heading 3"
+meta[["styles"]][["Table"]]                  = "Table Grid"
+meta[["styles"]][["Table_Caption"]]          = "table title"
+meta[["styles"]][["Figure_Caption"]]         = "graphic title" 
 
 # Locations can be either top or bottom
-meta$styles$Table_Caption_Location    = "top" 
-meta$styles$Figure_Caption_Location   = "bottom" 
+meta[["styles"]][["Table_Caption_Location"]]    = "top" 
+meta[["styles"]][["Figure_Caption_Location"]]   = "bottom" 
 
 # This sets the default figure width and height in inches for the document:
-meta$styles$Figure_Width              = 6.0
-meta$styles$Figure_Height             = 5.0
+meta[["styles"]][["Figure_Width"]]           = 6.0
+meta[["styles"]][["Figure_Height"]]          = 5.0
+
+
+# The pre_number and post_number values here wrap round the figure and table
+# number. For figure N the label before the caption will be:
+# "Figure N: " 
+# Followed by the caption.
+meta[["captions"]][["figure"]][["pre_number"]]          = "Figure "
+meta[["captions"]][["figure"]][["post_number"]]         = ": "
+meta[["captions"]][["table"]][["pre_number"]]           = "Table " 
+meta[["captions"]][["table"]][["post_number"]]          = ": "
+
+
+
+# When using markdown text you have to specify the default properties of text
+# for each of the styles listed above:
+
+meta[["md_def"]][["Normal"]] = list(
+        color          = "black",
+        font.size      = 12,
+        bold           = FALSE,
+        italic         = FALSE,
+        underlined     = FALSE,
+        font.family    = "Cambria (Body)",
+        vertical.align = "baseline",
+        shading.color  = "transparent")
+
+meta[["md_def"]][["Code"]] = list(
+        color          = "black",
+        font.size      = 12,
+        bold           = FALSE,
+        italic         = FALSE,
+        underlined     = FALSE,
+        font.family    = "Courier",
+        vertical.align = "baseline",
+        shading.color  = "transparent")
+
+meta[["md_def"]][["TOC"]] = list(
+        color          = "black",
+        font.size      = 12,
+        bold           = FALSE,
+        italic         = FALSE,
+        underlined     = FALSE,
+        font.family    = "Cambria (Body)",
+        vertical.align = "baseline",
+        shading.color  = "transparent")
+
+meta[["md_def"]][["Heading_1"]] = list(
+        color          = "black",
+        font.size      = 16,
+        bold           = TRUE,
+        italic         = FALSE,
+        underlined     = FALSE,
+        font.family    = "Calibri (Headings)",
+        vertical.align = "baseline",
+        shading.color  = "transparent")
+
+meta[["md_def"]][["Heading_2"]] = list(
+        color          = "black",
+        font.size      = 13,
+        bold           = TRUE,
+        italic         = FALSE,
+        underlined     = FALSE,
+        font.family    = "Calibri (Headings)",
+        vertical.align = "baseline",
+        shading.color  = "transparent")
+
+meta[["md_def"]][["Heading_3"]] = list(
+        color          = "black",
+        font.size      = 12,
+        bold           = TRUE,
+        italic         = FALSE,
+        underlined     = FALSE,
+        font.family    = "Calibri (Headings)",
+        vertical.align = "baseline",
+        shading.color  = "transparent")
+
+# Table_Labels refers to the footers and headers while Table is the defaults
+# for the body of the table
+meta[["md_def"]][["Table_Labels"]] = list(
+        color          = "black",
+        font.size      = 12,
+        bold           = TRUE, 
+        italic         = FALSE,
+        underlined     = FALSE,
+        font.family    = "Helvetica",
+        vertical.align = "baseline",
+        shading.color  = "transparent")
+
+meta[["md_def"]][["Table"]] = list(
+        color          = "black",
+        font.size      = 12,
+        bold           = FALSE,
+        italic         = FALSE,
+        underlined     = FALSE,
+        font.family    = "Helvetica",
+        vertical.align = "baseline",
+        shading.color  = "transparent")
+
+meta[["md_def"]][["Table_Caption"]] = list(
+        color          = "black",
+        font.size      = 12,
+        bold           = TRUE,
+        italic         = TRUE,
+        underlined     = FALSE,
+        font.family    = "Cambria (Body)",
+        vertical.align = "baseline",
+        shading.color  = "transparent")
+
+meta[["md_def"]][["Figure"]] = list(
+        color          = "black",
+        font.size      = 12,
+        bold           = FALSE,
+        italic         = FALSE,
+        underlined     = FALSE,
+        font.family    = "Cambria (Body)",
+        vertical.align = "baseline",
+        shading.color  = "transparent")
+
+meta[["md_def"]][["Figure_Caption"]] = list(
+        color          = "black",
+        font.size      = 12,
+        bold           = TRUE,
+        italic         = TRUE,
+        underlined     = FALSE,
+        font.family    = "Cambria (Body)",
+        vertical.align = "baseline",
+        shading.color  = "transparent")
+
 
 return(meta)}

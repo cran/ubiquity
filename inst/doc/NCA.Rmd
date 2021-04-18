@@ -15,6 +15,7 @@ require(ubiquity)
 require(ggplot2)
 require(rhandsontable)
 require(gridExtra)
+require(flextable)
 # The presim variable will contain presimualted data when eval is set to true
 presim_loaded = FALSE
 ```
@@ -154,15 +155,15 @@ fr = workshop_fetch(section="NCA", overwrite=TRUE)
 
 This creates several files in the working directory. First are data sets:
 
-* ``pk_all_sd.csv`` PK data for multiple subjects dosed either IV or SC at different levels
-* ``pk_all_md.csv`` Multiple dose data with intensive sampling on the first and last dose
-* ``pk_sparse_sd.csv`` Single dose data with sparse sampling
+* ``pk_all_sd.csv`` - PK data for multiple subjects dosed either IV or SC at different levels
+* ``pk_all_md.csv`` - Multiple dose data with intensive sampling on the first and last dose
+* ``pk_sparse_sd.csv`` - Single dose data with sparse sampling
 
 Next the following scripts demonstrate how to perform NCA:
 
-* ``analysis_nca_sd.R``     Single dose data for individuals
-* ``analysis_nca_md.R``     Multiple dose data for individuals
-* ``analysis_nca_sparse.R`` Average NCA when analyzing sparsely sampled data
+* ``analysis_nca_sd.R``    -  Single dose data for individuals
+* ``analysis_nca_md.R``    -  Multiple dose data for individuals
+* ``analysis_nca_sparse.R``-  Average NCA when analyzing sparsely sampled data
 
 ## Quick Template for Running NCA
 
@@ -175,7 +176,6 @@ fr = system_fetch_template(cfg, template = "NCA")
 ```
 
 This will create the file ``analysis_nca.R`` in the current working directory. You can just uncomment/edit that script to get started.
-
 
 ## Single Dose Data
 This example follows the script ``analysis_nca_sd.R``, and uses the dataset ``pk_all_sd.csv``. 
@@ -192,30 +192,30 @@ cfg = system_load_data(cfg, dsname     = "PKDATA",
 The NCA functions in ubiquity expect data to have a certain format. There are columns that are required, those that are optional or depend on the kind of analysis being performed and other columns can also be present. In this context consider the following dataset: 
 
 ```{r echo=FALSE, fig.align="center", eval=TRUE}
-rhandsontable(read.csv(system.file("ubinc", "csv", "pk_all_sd.csv" , package="ubiquity")), width=500, height=200)
+rhandsontable(read.csv(system.file("ubinc", "csv", "pk_all_sd.csv" , package="ubiquity")), width="100%", height=200)
 ```
 
 The required columns and their names in this dataset provided in parenthesis are:
 
-* ``ID``   Unique subject identifier (``ID``)
-* ``TIME``  Time since the first dose (``TIME_HR``)
-* ``NTIME`` Time since the last dose (since we are dealing with single dose data this is also ``TIME_HR``)
-* ``CONC``  Observed concentration for this record (``C_ng_ml`` in ng/ml)
-* ``DOSE`` Dose given (``DOSE`` in mg)
-* ``ROUTE`` Route of administration (``ROUTE``); can be either: ``iv bolus``, ``iv infusion`` or ``extra-vascular``
+* ``ID``    -  Unique subject identifier (``ID``)
+* ``TIME``  -  Time since the first dose (``TIME_HR``)
+* ``NTIME`` -  Nominal time since the last or most recent dose (since we are dealing with single dose data this is also ``TIME_HR``)
+* ``CONC``  -  Observed concentration for this record (``C_ng_ml`` in ng/ml)
+* ``DOSE``  -  Dose given (``DOSE`` in mg)
+* ``ROUTE`` -  Route of administration (``ROUTE``); can be either: ``iv bolus``, ``iv infusion`` or ``extra-vascular``
 
 Optional columns include:
 
-* ``DOSENUM`` When analyzing multiple dose data (example below), this column will be used to associate records with doses
-* ``BACKEXTRAP`` Back-extrapolation of IV data can be done generally for the entire dataset or this column can be used to specify the number of points to use on an individual basis
-* ``SPARSEGROUP`` Grouping for sparse sampling data where you want to average data at each time point
+* ``DOSENUM``     -  When analyzing multiple dose data (example below), this column will be used to associate records with doses
+* ``BACKEXTRAP``  -  Back-extrapolation of IV data can be done generally for the entire dataset or this column can be used to specify the number of points to use on an individual basis
+* ``SPARSEGROUP`` -  Grouping for sparse sampling data where you want to average data at each time point
 
 ### NCA and Outputs
 
 Next we perform the NCA using ``system_nca_run``:
 
 ```{r warning=FALSE, message=FALSE, echo=TRUE, error=FALSE, results="hide", fig.width=8, fig.height=4}
-cfg = system_nca_run(cfg, dsname        = "PKDATA", 
+cfg = system_nca_run(cfg,  dsname        = "PKDATA", 
                            dscale        = 1e6, 
                            analysis_name = "pk_single_dose", 
                            extrap_C0     = FALSE, 
@@ -225,10 +225,10 @@ cfg = system_nca_run(cfg, dsname        = "PKDATA",
                                                 DOSE    = "DOSE",
                                                 ROUTE   = "ROUTE", 
                                                 ID      = "ID"),
-                           digits        = 3)
+                           NCA_options   = list(max.aucinf.pext  = 10) )
 ```
 
-We link the analysis to the dataset by specfying the dataset name (``dsname``) used when we load the dataset. The dosing in the dataset is in mg (i.e. 30 mg dose), but the mass units of the concentration values are in ng (i.e. ng/ml). The ``dscale`` input converts the mass units in the dose to the mass units in the observed concentration. The ``analysis_name`` [^1] is used both to refer to this analysis in the reporting function as well as in the files generated by the analysis. By default the initial concentration (nominal time zero) will be back-extrapolated but can be disabled by  setting ``extrap_C0`` to FALSE. Next we map the columns in the dataset to names used by the analysis (``dsmap``). Note that both the actual time (``TIME``) and nominal time (``NTIME``) both use the same column in the dataset (``TIME_HR``). Lastly, the ``digits`` input will define rounding rules for the reported values. 
+We link the analysis to the dataset by specfying the dataset name (``dsname``) used when we load the dataset. Data can be filtered either before it's loaded or by using the optional ``dsfilter`` input (not used here). The dosing in the dataset is in mg (i.e. 30 mg dose), but the mass units of the concentration values are in ng (i.e. ng/ml). The ``dscale`` input converts the mass units in the dose to the mass units in the observed concentration. The ``analysis_name`` [^1] is used both to refer to this analysis in the reporting function as well as in the files generated by the analysis. By default the initial concentration (nominal time zero) will be back-extrapolated but can be disabled by  setting ``extrap_C0`` to FALSE. Next we map the columns in the dataset to names used by the analysis (``dsmap``). Note that both the actual time (``TIME``) and nominal time (``NTIME``) both use the same column in the dataset (``TIME_HR``). Lastly, the ``NCA_options`` can be used to specify the analysis options used by PKNCA. In the example above the maximum percent of AUCinf extrapolation is being specified at 10%. This will only change this option and the remaining defaults from PKCNA will be used. Either omit this agument or set it to NULL to use all of the PKNCA defaults. 
 
 
 Running this function will produce the following files:
@@ -237,12 +237,15 @@ Running this function will produce the following files:
 * ``output/pk_single_dose-nca_data.RData``         R objects used for downstream reporting
 * ``output/pk_single_dose-pknca_raw.csv``          Raw output from PKNCA
 
+It may be useful to carry forward the values of certain columns in the PK dataset into the output. To do this you can use the ``dsinc`` argument and provide a list of columns in your input dataset to be appended to the summary table. You can access the summary table using the function ``system_fetch_nca`` and the ``analysis_name``:
 
+```{r warning=FALSE, message=FALSE, echo=TRUE, error=FALSE, eval=FALSE, results="hide", fig.width=8, fig.height=4}
+NCA_results = system_fetch_nca(cfg, analysis_name = "pk_single_dose")
+```
 ```{r warning=FALSE, message=FALSE, echo=FALSE, error=FALSE}
 nca_summary = read.csv(file.path("output", "pk_single_dose-nca_summary-pknca.csv"))
 presim$sd$nca_summary = nca_summary
 ```
-
 ```{r results="hide", warning=FALSE, echo=FALSE, eval=TRUE}
 if(presim_loaded){
   nca_summary = presim$sd$nca_summary
@@ -250,31 +253,34 @@ if(presim_loaded){
 ```
 
 ```{r echo=FALSE, fig.align="center", eval=TRUE}
-rhandsontable(nca_summary,  width=500, height=200)
+rhandsontable(nca_summary,  width="100%", height=200)
 ```
 
-The following columns are provided in the outputd, and when calculated with ``PKNCA`` output names provided in perenthesis are those from ``PKNCA``:
+To get an explanation of the columns in the NCA output you can use the ``system_fetch_nca_columns`` function passing the NCA analysis name to the function. The list output contains a data frame ``NCA_col_summary`` with the outputs and a description of their meaning:
 
-* ``ID`` Subject ID for when ``sparse = FALSE`` and group ID when ``sparse = TRUE``
-* ``Nobs`` Number of observations used for calculation
-* ``Dose_Number`` Current dose number
-* ``Dose`` Dose (units from the dataset)
-* ``Dose_CU`` Dose (mass in units from concentration data)
-* ``Cmax`` Maximum observed concentration 
-* ``Tmax`` Time of Cmax
-* ``halflife`` Terminal half-life (``half.life``)
-* ``Vp_obs`` When the dosing route is "iv bolus", this is the volume calculated by dividing the dose in concentration units by the first observed concentration or C0 of extrapolation is selected. For other routes a value of -1 will be returned.
-* ``Vss_obs`` Steady-state volume of distribution based on observation data (``vss.obs``)
-* ``Vss_pred`` Steady-state volume of distribution with $C_{last,pred}$ as the final observation
-  (``vss.pred``)
-* ``C0`` Back-extrapolated initial concentration
-* ``CL_obs`` Clearance  based on observation data (``cl.obs``)
-* ``CL_pred`` Clearance calculated using  $C_{last,pred}$ as the final observation (``cl.pred``)
-* ``AUClast`` Area under the curve  based on observation data (``auclast``)
-* ``AUCinf_obs`` Area under the curve extrapolated to infinity using observed data (``aucinf.obs``)
-* ``AUCinf_pred`` Area under the curve extrapolated to infinity using $C_{last,pred}$ as the final observation (``aucinf.pred``)
+```{r warning=FALSE, message=FALSE, echo=TRUE, error=FALSE, eval=FALSE, results="hide", fig.width=8, fig.height=4}
+nca_cols = system_fetch_nca_columns(cfg, "pk_single_dose")
+rhandsontable(nca_cols[["NCA_col_summary"]],  width="100%", height=200)
+```
 
-Where $C_{last,pred}$ is the predicted concentration at the final sample time by regression of the terminal phase of data. 
+```{r warning=FALSE, message=FALSE, echo=FALSE, error=FALSE}
+nca_cols = system_fetch_nca_columns(cfg, "pk_single_dose")
+presim$sd$nca_cols = nca_cols
+```
+
+```{r results="hide", warning=FALSE, echo=FALSE, eval=TRUE}
+if(presim_loaded){
+  nca_summary = presim$sd$nca_summary
+  nca_cols    = presim$sd$nca_cols
+}
+```
+
+```{r echo=FALSE, fig.align="center", eval=TRUE}
+HT = rhandsontable(nca_cols[["NCA_col_summary"]],  width="100%", height=200)
+
+HT = hot_cols(HT, colWidths = c(80, 80,100, 450))
+HT
+```
 
 ### Automated Reporting
 
@@ -297,14 +303,14 @@ For each dose a summary slide will be produced and a full timecourse will be cre
 * Initial extrapolated concentrations in orange (solid)
 * Points used for extapolating "iv bolus" data are shown in orange open circles
 
-Below shows the slides generated for an individual subject and the first set of summary slides for the analysis. Notice that because ``extrap_C0`` was set to ``FALSE`` C0 was not calculated (-1). Because this individual received a SC dose the estimate for ``Vp`` is also not calcualted (-1). Also note that the data for this inidivudal did not allow for extrapolation of AUC to infinity (``NA``). As a result the parameters that depend this value also resulted in (``NA``). The timecourse figure shows the data in the dataset (grey closed symbols, solid line) and the data used for NCA (green open symbols, dashed line). This way you can visually confirm at the subject level what data was used. 
+Below shows the slides generated for an individual subject and the first set of summary slides for the analysis. Notice that because ``extrap_C0`` was set to ``FALSE`` C0 was not calculated (``NA``). Because this individual received a SC dose the estimate for ``Vp`` is also not calcualted (``NA``). Also note that the data for this inidivudal did not allow for extrapolation of AUC to infinity (``NA``). As a result the parameters that depend this value also resulted in (``NA``). The timecourse figure shows the data in the dataset (grey closed symbols, solid line) and the data used for NCA (green open symbols, dashed line). This way you can visually confirm at the subject level what data was used. 
 
 ![Reporting for single dose NCA](nca_reporting-sd.png){width=80%} 
 
-
+       
 #### Word
 
-Similarly, a Word report can be generated by appendign the report to an already initialzed Word report. This is done by setting the ``rpttype`` to ``"Word"`` when calling ``system_report_init``. This will attach the same content to the report as with PowerPoint report above.
+Similarly, a Word report can be generated by appending the results to an already initialized Word report. This is done by setting the ``rpttype`` to ``"Word"`` when calling ``system_report_init``. This will attach the same content to the report as with PowerPoint report above.
 
 ```{r warning=FALSE, message=FALSE, eval=FALSE, echo=TRUE, error=FALSE, results="hide", fig.width=8, fig.height=4}
 cfg = system_report_init(cfg, rpttype="Word")
@@ -314,6 +320,45 @@ system_report_save(cfg=cfg, output_file=file.path("output", "pk_single_dose-repo
 
 For more information on integrated report generation see the ``Reporting`` vignette. 
 
+### Summarizing Data
+
+The automated reporting is intended to generate results quickly in an easily digestable way (Word and PowerPoint). But you may decided you need more control over what is being presented. The function ``system_fetch_nca()`` mentioned above will give you access to all of the NCA output. If you want to filter, select columns and summarize results the function ``system_nca_summary()`` can be used. The first argument (``analysis_name``) indicates the NCA analysis you want to summarize. The parameters being summarized and their order in the table is specified by ``params_include``. By default internal headers will be used, but you can overwrite or alter those defaults with optional ``params_header`` input. Here ``cmax`` is being overwriten with the internally predefined label (``"<label>"``) on the first header row, and the units (``"(ng/ml)"``) on the second header row. In this table we only want to present the 30 mg dose. The ``ds_wrangle`` option will filter down the results to just that dosing cohort. It may be desirable to further summarize results. The ``summary_stats`` option is a list of values to summarize and the columns where those summaries should appear. Each name in that list will create a row at the bottom of the column. You can specify the summary lables with ``summary_labels`` and indicate which column to contain those labels with ``summary_location``.
+
+```{r warning=FALSE, message=FALSE, echo=TRUE, error=FALSE}
+nca_table = system_nca_summary(cfg, 
+       analysis_name    = "pk_single_dose",
+       params_include   = c( "ID", "cmax", "tmax", "half.life", "auclast"),
+       params_header    = list(cmax = c( "<label>", "(ng/ml)")),
+       ds_wrangle       = "NCA_sum = NCA_sum %>% dplyr::filter(Dose == 30)",
+       summary_stats    = list("<MEAN> (<STD>)" = c("auclast", "half.life"),
+                               "<MEDIAN>"       = c("tmax")), 
+       summary_labels   = list(MEAN             = "Mean", 
+                               STD              = "Std Dev", 
+                               N                = "N obs",
+                               MEDIAN           = "Median", 
+                               SE               = "Std Err."),
+       summary_location = "ID")
+
+nca_table[["vignette"]] = set_table_properties(nca_table$nca_summary_ft,layout = "autofit")
+```
+       
+```{r warning=FALSE, message=FALSE, echo=FALSE, error=FALSE}
+presim$sd$nca_table = nca_table
+```
+
+```{r results="hide", warning=FALSE, echo=FALSE, eval=TRUE}
+if(presim_loaded){
+  nca_table   = presim$sd$nca_table
+}
+```
+
+The output of ``system_nca_summary()`` is a list with elements that are designed to facilitate reporting. The unformatted tabular information is provided in a dataframe (``nca_summary``) and this can be saved as text for archival purposes. Flextable output (``nca_summary_ft``) is also provided. This can be further customized if needed and eventually be used in Word or PowerPoint (see below). If you want to create your own output from this you can use the ``components`` field.
+
+```{r warning=FALSE, echo=FALSE, eval=TRUE}
+nca_table[["vignette"]]
+```
+
+       
 ## Multiple Dose Data
 This example follows the script ``analysis_nca_md.R``, and uses the dataset ``pk_all_md.csv``.   If we rebuild the system and load the multiple dose dataset we can see that the dataset looks almost identical to the single dose data set. The primary difference is that there are two extra columns: ``NTIME_HR`` and ``EXTRAP``. The first column (``NTIME_HR``) contains the time since the last dose. The ``EXTRAP`` column is optional and allows the user to specify the number of points to back extrapolate C0 for ``iv bolus`` dosing. This will have no effect unless it is specified in the ``dsmap`` below. If you scroll through the data you can see that there is intensive sampling for ``DOSENUM`` 1 and 6. But for doses 2-5 there are only three samples per interval. These latter dose intervals (2-5) will be ignored with the default value of ``NCA_min`` (4) which defines the minimum number of saples required for analysis.
 ```{r warning=FALSE, message=FALSE, echo=TRUE, error=FALSE, results="hide", fig.width=8, fig.height=4}
@@ -323,7 +368,7 @@ cfg = system_load_data(cfg, dsname     = "PKDATA",
 ```
 
 ```{r echo=FALSE, fig.align="center", eval=TRUE}
-rhandsontable(read.csv(system.file("ubinc", "csv", "pk_all_md.csv" , package="ubiquity")), width=500, height=200)
+rhandsontable(read.csv(system.file("ubinc", "csv", "pk_all_md.csv" , package="ubiquity")), width="100%", height=200)
 ```
 
 Next we perform the NCA and reporting as before. The only difference here is that we've removed the ``extrap_C0`` option. The default value is ``TRUE`` so back-extrapolation will occur. For IV dosing this is log-linear extrapolation to a nominal time of zero. For SC dosing this will be 0 for the first dose and the last observation from the last dosing interval for subsequent dosing. 
@@ -338,8 +383,7 @@ cfg = system_nca_run(cfg, dsname        = "PKDATA",
                                                ROUTE   = "ROUTE", 
                                                ID      = "ID",
                                                DOSENUM = "DOSENUM",
-                                               EXTRAP  = "EXTRAP"),
-                          digits        = 3)
+                                               EXTRAP  = "EXTRAP"))
 ```
 
 ```{r warning=FALSE, eval=FALSE, message=FALSE, echo=TRUE, error=FALSE, results="hide", fig.width=8, fig.height=4}
@@ -353,8 +397,7 @@ cfg = system_nca_run(cfg, dsname        = "PKDATA",
                                                ROUTE   = "ROUTE", 
                                                ID      = "ID",
                                                DOSENUM = "DOSENUM",
-                                               EXTRAP  = "EXTRAP"),
-                          digits        = 3)
+                                               EXTRAP  = "EXTRAP"))
 cfg = system_report_init(cfg)
 cfg = system_report_slide_title(cfg, title = "NCA of Multiple Dose PK")
 cfg = system_report_nca(cfg, analysis_name = "pk_multiple_dose")
@@ -375,7 +418,7 @@ if(presim_loaded){
 ```
 
 ```{r echo=FALSE, fig.align="center", eval=TRUE}
-rhandsontable(nca_summary,  width=500, height=200)
+rhandsontable(nca_summary,  width="100%", height=200)
 ```
 
 
@@ -394,7 +437,7 @@ cfg = system_load_data(cfg, dsname     = "PKDATA",
 ```
 
 ```{r echo=FALSE, fig.align="center", eval=TRUE}
-rhandsontable(read.csv(system.file("ubinc", "csv", "pk_sparse_sd.csv" , package="ubiquity")), width=500, height=200)
+rhandsontable(read.csv(system.file("ubinc", "csv", "pk_sparse_sd.csv" , package="ubiquity")), width="100%", height=200)
 ```
 
 When we run the NCA we need to tell the function that we want to perform a sparse analysis. This is done by setting the ``sparse`` input to ``TRUE``. We also need to provide information on how to group cohorts. This is done by providing a ``SPARSEGROUP`` option in the ``dsmap``. In this case we can just use the ``DOSE`` column, however a different column could have been used. 
@@ -410,8 +453,7 @@ cfg = system_nca_run(cfg, dsname        = "PKDATA",
                                                DOSE        = "DOSE",
                                                ROUTE       = "ROUTE", 
                                                ID          = "ID",
-                                               SPARSEGROUP = "DOSE"),
-                          digits        = 3)
+                                               SPARSEGROUP = "DOSE"))
             
 
 cfg = system_report_init(cfg)
@@ -428,9 +470,7 @@ cfg = system_nca_run(cfg, dsname        = "PKDATA",
                                                DOSE        = "DOSE",
                                                ROUTE       = "ROUTE", 
                                                ID          = "ID",
-                                               SPARSEGROUP = "DOSE"),
-                          digits        = 3)
-            
+                                               SPARSEGROUP = "DOSE"))
 
 cfg = system_report_init(cfg)
 cfg = system_report_slide_title(cfg, title = "NCA of Sparsely Sampled PK")
@@ -452,7 +492,7 @@ if(presim_loaded){
 ```
 
 ```{r echo=FALSE, fig.align="center", eval=TRUE}
-rhandsontable(nca_summary,  height=150, width=500)
+rhandsontable(nca_summary,  height=150, width="100%")
 ```
 
 

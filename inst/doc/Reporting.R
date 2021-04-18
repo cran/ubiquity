@@ -89,12 +89,52 @@ require(flextable)
 
 ## ----results="hide", message=FALSE, warning=FALSE-----------------------------
 #  cfg = system_report_slide_two_col(cfg,
+#          title                  = "Two columns of plain text",
+#          sub_title              = "Subtitle",
+#          content_type           = "text",
+#          left_content           = "Left Side",
+#          right_content          = "Right Side")
+#  
+#  cfg = system_report_slide_two_col(cfg,
+#         title                  = "Two Col Text w/Headers",
+#         sub_title              = "Two columns of text with headers",
+#         content_type           = "list",
+#         right_content          = c(1, "Right Text"),
+#         left_content_type      = "list",
+#         left_content           = c(1, "Left Text"),
+#         right_content_type     = "list")
+
+## ----results="hide", message=FALSE, warning=FALSE-----------------------------
+#  cfg = system_report_slide_two_col(cfg,
 #         title                  = "Two columns of lists",
 #         sub_title              = NULL,
 #         content_type           = "list",
 #         left_content           = lcont,
 #         right_content_type     = "flextable",
 #         right_content          = tcont)
+
+## ----results="hide", message=FALSE, warning=FALSE-----------------------------
+#  
+#  cfg = system_report_slide_two_col(cfg,
+#         title                  = "Two Col Text w/Headers",
+#         sub_title              = "Two columns of text with headers",
+#         content_type           = "text",
+#         right_content          = "Right Text",
+#         left_content_type      = "text",
+#         left_content           = "Left Text",
+#         left_content_header    = "Left Header",
+#         right_content_header   = "Right Header")
+#  
+#  cfg = system_report_slide_two_col(cfg,
+#         title                  = "Two Col Text w/Headers",
+#         sub_title              = "Two columns of text with headers",
+#         content_type           = "list",
+#         right_content          = c(1, "Right Text"),
+#         left_content_type      = "list",
+#         left_content           = c(1, "Left Text"),
+#         left_content_header    = "Left Header",
+#         right_content_type     = "list",
+#         right_content_header   = "Right Header")
 
 ## ----results="hide", message=FALSE, warning=FALSE-----------------------------
 #  cfg = system_report_slide_two_col(cfg,
@@ -107,6 +147,32 @@ require(flextable)
 #         right_content_header   = "ggplot object",
 #         right_content_type     = "ggplot",
 #         right_content          = myfig)
+
+## ----results="hide", message=FALSE, warning=FALSE-----------------------------
+#  data = data.frame(property = c("mean",   "variance"),
+#                    Cmax     = c(2,         0.1),
+#                    AUCinf   = c(22,       0.21),
+#                    AUClast  = c(22,       0.21))
+#  
+#  header = list(property = c("",              ""),
+#                Cmax     = c("Cmax",          "ng/ml"),
+#                AUCinf   = c("AUCinf",        "mL/hr"),
+#                AUClast  = c("AUClast",       "mL/hr"))
+
+## ----results="hide", message=FALSE, warning=FALSE-----------------------------
+#  library(magrittr)
+#  library(flextable)
+#  ft = flextable::flextable(data)                     %>%
+#       flextable::delete_part(part = "header")        %>%
+#       flextable::add_header(values =as.list(header)) %>%
+#       flextable::theme_zebra()
+
+## ----results="hide", message=FALSE, warning=FALSE-----------------------------
+#  cfg = system_report_slide_content(cfg,
+#         title        = "Userdefined Flextable",
+#         sub_title    = "flextable_object",
+#         content_type = "flextable_object",
+#         content      = ft)
 
 ## ----results="hide", message=FALSE, warning=FALSE-----------------------------
 #  system_report_save(cfg, output_file = "report_vignette.pptx")
@@ -206,7 +272,73 @@ require(flextable)
 #  cfg = system_report_doc_add_content(cfg,
 #    content_type  = "flextable",
 #    content       = tcf)
+
+## ----results="hide", message=FALSE, warning=FALSE, eval=TRUE------------------
+library(magrittr)
+library(flextable)
+
+data = data.frame(property = c("mean",   "variance"),
+                  Cmax     = c(2,         0.1),
+                  AUCinf   = c(22,       0.21),
+                  AUClast  = c(22,       0.21))
+
+header = list(property = c("",              ""),
+              Cmax     = c("Cmax",          "ng/ml"),
+              AUCinf   = c("AUCinf",        "mL/hr"),
+              AUClast  = c("AUClast",       "mL/hr"))
+
+# This creates a flextable object:
+ft = flextable::flextable(data)                     %>% 
+     flextable::delete_part(part = "header")        %>%
+     flextable::add_header(values =as.list(header)) %>%
+     flextable::theme_zebra()
+
+## ----eval=TRUE, message=FALSE, warning=FALSE, echo=FALSE----------------------
+knitr::knit_print(ft)
+
+## ----results="hide", message=FALSE, warning=FALSE, eval=FALSE-----------------
+#  tcfo = list(caption = "This is a flextable object",
+#              key     = "TAB_FTO",
+#              ft      = ft)
 #  
+#  cfg = system_report_doc_add_content(cfg,
+#    content_type  = "flextable_object",
+#    content       = tcfo)
+
+## ----results="hide", message=FALSE, warning=FALSE, eval=TRUE------------------
+ftf = flextable::flextable(data)                                                                       %>% 
+      flextable::delete_part(part = "header")                                                          %>%
+      flextable::add_header(values =as.list(header)) %>%
+      flextable::compose(j    = "Cmax",                                                    
+                        part  = "header",                                                          
+                        value = c(md_to_oo("*C*~*max*~")$oo, md_to_oo("*ng/ml*")$oo))                  %>%
+      flextable::compose(j    = "AUClast",                                                    
+                        part  = "header",                                                          
+                        value = c(md_to_oo("*AUC*~*last*~")$oo, md_to_oo("*ml\U00B7hr*^*-1*^")$oo))         %>%
+      flextable::compose(j    = "AUCinf",                                                    
+                        part  = "header",                                                          
+                        value = c(md_to_oo("*AUC*~*inf*~")$oo, md_to_oo("*ml\U00B7hr*^*-1*^")$oo))          %>%
+      flextable::compose(j     = "property",                                                         
+                         i     = match("mean", data$property),                        
+                         part  = "body",                                                          
+                         value = c(md_to_oo("Mean (<ff:symbol>m</ff>)")$oo))                            %>%
+      flextable::compose(j     = "property",                                                         
+                         i     = match("variance", data$property),                        
+                         part  = "body",                                                          
+                         value = c(md_to_oo("Variance (<ff:symbol>s</ff>^2^)")$oo))                     %>%
+      flextable::autofit()                                                                             %>%
+      flextable::theme_zebra()
+
+## ----eval=TRUE, message=FALSE, warning=FALSE, echo=FALSE----------------------
+knitr::knit_print(ftf)
+
+## ----results="hide", message=FALSE, warning=FALSE, eval=FALSE-----------------
+#  tcfo = list(caption = "This is a flextable object",
+#              key     = "TAB_FTO_FORMATTED",
+#              ft      = ftf)
+#  cfg = system_report_doc_add_content(cfg,
+#    content_type  = "flextable_object",
+#    content       = tcfo)
 
 ## ----results="hide", message=FALSE, warning=FALSE, eval=FALSE-----------------
 #  cfg = system_report_doc_set_ph(cfg,

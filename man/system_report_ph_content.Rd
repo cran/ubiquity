@@ -7,6 +7,7 @@
 system_report_ph_content(
   cfg,
   rpt,
+  rptname,
   content_type,
   content,
   type,
@@ -18,6 +19,8 @@ system_report_ph_content(
 \item{cfg}{ubiquity system object}
 
 \item{rpt}{officer pptx object}
+
+\item{rptname}{report name initialized with \code{system_report_init}}
 
 \item{content_type}{string indicating the content type}
 
@@ -53,11 +56,13 @@ For each content type listed below the following content is expected:
   \itemize{
      \item \code{table} Data frame containing the tabular data
      \item \code{header_top}, \code{header_middle}, \code{header_bottom} (\code{NULL}) a list with the same names as the data frame names containing the tabular data and values with the header text to show in the table
+     \item \code{header_format} string containing the format, either \code{"text"}, or \code{"md"} (default \code{NULL} assumes \code{"text"} format)
      \item \code{merge_header} (\code{TRUE}) Set to true to combine column headers with the same information
      \item \code{table_body_alignment}, table_header_alignment ("center") Controls alignment
      \item \code{table_autofit} (\code{TRUE}) Automatically fit content, or specify the cell width and height with \code{cwidth} (\code{0.75}) and \code{cheight} (\code{0.25})
      \item \code{table_theme} (\code{"theme_vanilla"}) Table theme
    }
+ \item \code{"flextable_object"} user defined flextable object 
  }
 }
 \seealso{

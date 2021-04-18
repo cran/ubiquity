@@ -38,11 +38,12 @@ format (\code{?md_to_officer} for markdown details).
      \item \code{"style"} string containing the style either \code{"normal"}, \code{"code"}, \code{"h1"}, \code{"h2"}, \code{"h3"}
      \item \code{"format"} string containing the format, either \code{"text"}, \code{"fpar"}, or \code{"md"} (default \code{NULL} assumes \code{"text"} format)
    }
- \item \code{"imagefile"} content is a list containing describing an image file with the following elements
+ \item \code{"imagefile"} content is a list containing information describing an image file with the following elements
   \itemize{
      \item \code{image} string containing path to image file
      \item \code{caption} caption of the image (\code{NULL})  
      \item \code{caption_format} string containing the format, either \code{"text"}, \code{"fpar"}, or \code{"md"} (default \code{NULL} assumes \code{"text"} format)
+     \item \code{key} unique key for cross referencing e.g. "FIG_DATA" (\code{NULL})  
      \item \code{height} height of the image (\code{NULL})
      \item \code{width} width of the image (\code{NULL})
    }
@@ -51,27 +52,37 @@ format (\code{?md_to_officer} for markdown details).
      \item \code{image} ggplot object
      \item \code{caption} caption of the image (\code{NULL})  
      \item \code{caption_format} string containing the format, either \code{"text"}, \code{"fpar"}, or \code{"md"} (default \code{NULL} assumes \code{"text"} format)
+     \item \code{key} unique key for cross referencing e.g. "FIG_DATA" (\code{NULL})  
      \item \code{height} height of the image (\code{NULL})
      \item \code{width} width of the image (\code{NULL})
    }
- \item \code{"table"} content list containing the table content and other options with the following elements:
+ \item \code{"table"} content is a list containing the table content and other options with the following elements:
   \itemize{
      \item \code{table} data frame containing the tabular data
      \item \code{caption} caption of the table (\code{NULL})  
      \item \code{caption_format} string containing the format, either \code{"text"}, \code{"fpar"}, or \code{"md"} (default \code{NULL} assumes \code{"text"} format)
+     \item \code{key} unique key for cross referencing e.g. "TAB_DATA" (\code{NULL})  
      \item \code{header} Boolean variable to control displaying the header (\code{TRUE})
      \item \code{first_row} Boolean variable to indicate that the first row contains header information (\code{TRUE})
    }
- \item \code{"flextable"} list containing flextable content and other options with the following elements (defaults in parenthesis):
+ \item \code{"flextable"} content is a list containing flextable content and other options with the following elements (defaults in parenthesis):
   \itemize{
-     \item \code{table} Data frame containing the tabular data
+     \item \code{table} data frame containing the tabular data
      \item \code{caption} caption of the table (\code{NULL})  
      \item \code{caption_format} string containing the format, either \code{"text"}, \code{"fpar"}, or \code{"md"} (default \code{NULL} assumes \code{"text"} format)
+     \item \code{key} unique key for cross referencing e.g. "TAB_DATA" (\code{NULL})  
      \item \code{header_top}, \code{header_middle}, \code{header_bottom} (\code{NULL}) a list with the same names as the data frame names containing the tabular data and values with the header text to show in the table
+     \item \code{header_format} string containing the format, either \code{"text"}, or \code{"md"} (default \code{NULL} assumes \code{"text"} format)
      \item \code{merge_header} (\code{TRUE}) Set to true to combine column headers with the same information
      \item \code{table_body_alignment}, table_header_alignment ("center") Controls alignment
      \item \code{table_autofit} (\code{TRUE}) Automatically fit content, or specify the cell width and height with \code{cwidth} (\code{0.75}) and \code{cheight} (\code{0.25})
      \item \code{table_theme} (\code{"theme_vanilla"}) Table theme
+   }
+ \item \code{"flextable_object"} content is a list specifying the a user defined flextable object with the following elements:
+  \itemize{
+     \item \code{ft} flextable object 
+     \item \code{caption} caption of the table (\code{NULL})  
+     \item \code{key} unique key for cross referencing e.g. "TAB_DATA" (\code{NULL})  
    }
 }}
 }

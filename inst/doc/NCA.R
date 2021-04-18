@@ -4,6 +4,7 @@ require(ubiquity)
 require(ggplot2)
 require(rhandsontable)
 require(gridExtra)
+require(flextable)
 # The presim variable will contain presimualted data when eval is set to true
 presim_loaded = FALSE
 
@@ -112,10 +113,10 @@ gridExtra::grid.arrange(p_AUC, p_AUMC, ncol=2)
 #                              data_file  = "pk_all_sd.csv")
 
 ## ----echo=FALSE, fig.align="center", eval=TRUE--------------------------------
-rhandsontable(read.csv(system.file("ubinc", "csv", "pk_all_sd.csv" , package="ubiquity")), width=500, height=200)
+rhandsontable(read.csv(system.file("ubinc", "csv", "pk_all_sd.csv" , package="ubiquity")), width="100%", height=200)
 
 ## ----warning=FALSE, message=FALSE, echo=TRUE, error=FALSE, results="hide", fig.width=8, fig.height=4----
-#  cfg = system_nca_run(cfg, dsname        = "PKDATA",
+#  cfg = system_nca_run(cfg,  dsname        = "PKDATA",
 #                             dscale        = 1e6,
 #                             analysis_name = "pk_single_dose",
 #                             extrap_C0     = FALSE,
@@ -125,7 +126,10 @@ rhandsontable(read.csv(system.file("ubinc", "csv", "pk_all_sd.csv" , package="ub
 #                                                  DOSE    = "DOSE",
 #                                                  ROUTE   = "ROUTE",
 #                                                  ID      = "ID"),
-#                             digits        = 3)
+#                             NCA_options   = list(max.aucinf.pext  = 10) )
+
+## ----warning=FALSE, message=FALSE, echo=TRUE, error=FALSE, eval=FALSE, results="hide", fig.width=8, fig.height=4----
+#  NCA_results = system_fetch_nca(cfg, analysis_name = "pk_single_dose")
 
 ## ----warning=FALSE, message=FALSE, echo=FALSE, error=FALSE--------------------
 #  nca_summary = read.csv(file.path("output", "pk_single_dose-nca_summary-pknca.csv"))
@@ -137,7 +141,27 @@ if(presim_loaded){
 }
 
 ## ----echo=FALSE, fig.align="center", eval=TRUE--------------------------------
-rhandsontable(nca_summary,  width=500, height=200)
+rhandsontable(nca_summary,  width="100%", height=200)
+
+## ----warning=FALSE, message=FALSE, echo=TRUE, error=FALSE, eval=FALSE, results="hide", fig.width=8, fig.height=4----
+#  nca_cols = system_fetch_nca_columns(cfg, "pk_single_dose")
+#  rhandsontable(nca_cols[["NCA_col_summary"]],  width="100%", height=200)
+
+## ----warning=FALSE, message=FALSE, echo=FALSE, error=FALSE--------------------
+#  nca_cols = system_fetch_nca_columns(cfg, "pk_single_dose")
+#  presim$sd$nca_cols = nca_cols
+
+## ----results="hide", warning=FALSE, echo=FALSE, eval=TRUE---------------------
+if(presim_loaded){
+  nca_summary = presim$sd$nca_summary
+  nca_cols    = presim$sd$nca_cols
+}
+
+## ----echo=FALSE, fig.align="center", eval=TRUE--------------------------------
+HT = rhandsontable(nca_cols[["NCA_col_summary"]],  width="100%", height=200)
+
+HT = hot_cols(HT, colWidths = c(80, 80,100, 450))
+HT
 
 ## ----warning=FALSE, message=FALSE, eval=FALSE, echo=TRUE, error=FALSE, results="hide", fig.width=8, fig.height=4----
 #  cfg = system_report_init(cfg, rpttype="PowerPoint")
@@ -150,13 +174,41 @@ rhandsontable(nca_summary,  width=500, height=200)
 #  cfg = system_report_nca(cfg, analysis_name = "pk_single_dose")
 #  system_report_save(cfg=cfg, output_file=file.path("output", "pk_single_dose-report.docx"))
 
+## ----warning=FALSE, message=FALSE, echo=TRUE, error=FALSE---------------------
+#  nca_table = system_nca_summary(cfg,
+#         analysis_name    = "pk_single_dose",
+#         params_include   = c( "ID", "cmax", "tmax", "half.life", "auclast"),
+#         params_header    = list(cmax = c( "<label>", "(ng/ml)")),
+#         ds_wrangle       = "NCA_sum = NCA_sum %>% dplyr::filter(Dose == 30)",
+#         summary_stats    = list("<MEAN> (<STD>)" = c("auclast", "half.life"),
+#                                 "<MEDIAN>"       = c("tmax")),
+#         summary_labels   = list(MEAN             = "Mean",
+#                                 STD              = "Std Dev",
+#                                 N                = "N obs",
+#                                 MEDIAN           = "Median",
+#                                 SE               = "Std Err."),
+#         summary_location = "ID")
+#  
+#  nca_table[["vignette"]] = set_table_properties(nca_table$nca_summary_ft,layout = "autofit")
+
+## ----warning=FALSE, message=FALSE, echo=FALSE, error=FALSE--------------------
+#  presim$sd$nca_table = nca_table
+
+## ----results="hide", warning=FALSE, echo=FALSE, eval=TRUE---------------------
+if(presim_loaded){
+  nca_table   = presim$sd$nca_table
+}
+
+## ----warning=FALSE, echo=FALSE, eval=TRUE-------------------------------------
+nca_table[["vignette"]]
+
 ## ----warning=FALSE, message=FALSE, echo=TRUE, error=FALSE, results="hide", fig.width=8, fig.height=4----
 #  cfg = build_system(system_file="system.txt")
 #  cfg = system_load_data(cfg, dsname     = "PKDATA",
 #                              data_file  = "pk_all_md.csv")
 
 ## ----echo=FALSE, fig.align="center", eval=TRUE--------------------------------
-rhandsontable(read.csv(system.file("ubinc", "csv", "pk_all_md.csv" , package="ubiquity")), width=500, height=200)
+rhandsontable(read.csv(system.file("ubinc", "csv", "pk_all_md.csv" , package="ubiquity")), width="100%", height=200)
 
 ## ----warning=FALSE, message=FALSE, echo=FALSE, error=FALSE, results="hide", fig.width=8, fig.height=4----
 #  cfg = system_nca_run(cfg, dsname        = "PKDATA",
@@ -169,8 +221,7 @@ rhandsontable(read.csv(system.file("ubinc", "csv", "pk_all_md.csv" , package="ub
 #                                                 ROUTE   = "ROUTE",
 #                                                 ID      = "ID",
 #                                                 DOSENUM = "DOSENUM",
-#                                                 EXTRAP  = "EXTRAP"),
-#                            digits        = 3)
+#                                                 EXTRAP  = "EXTRAP"))
 
 ## ----warning=FALSE, eval=FALSE, message=FALSE, echo=TRUE, error=FALSE, results="hide", fig.width=8, fig.height=4----
 #  cfg = system_nca_run(cfg, dsname        = "PKDATA",
@@ -183,8 +234,7 @@ rhandsontable(read.csv(system.file("ubinc", "csv", "pk_all_md.csv" , package="ub
 #                                                 ROUTE   = "ROUTE",
 #                                                 ID      = "ID",
 #                                                 DOSENUM = "DOSENUM",
-#                                                 EXTRAP  = "EXTRAP"),
-#                            digits        = 3)
+#                                                 EXTRAP  = "EXTRAP"))
 #  cfg = system_report_init(cfg)
 #  cfg = system_report_slide_title(cfg, title = "NCA of Multiple Dose PK")
 #  cfg = system_report_nca(cfg, analysis_name = "pk_multiple_dose")
@@ -200,7 +250,7 @@ if(presim_loaded){
 }
 
 ## ----echo=FALSE, fig.align="center", eval=TRUE--------------------------------
-rhandsontable(nca_summary,  width=500, height=200)
+rhandsontable(nca_summary,  width="100%", height=200)
 
 ## ----warning=FALSE, message=FALSE, echo=TRUE, error=FALSE, results="hide", fig.width=8, fig.height=4----
 #  cfg = build_system(system_file="system.txt")
@@ -208,7 +258,7 @@ rhandsontable(nca_summary,  width=500, height=200)
 #                              data_file  = "pk_sparse_sd.csv")
 
 ## ----echo=FALSE, fig.align="center", eval=TRUE--------------------------------
-rhandsontable(read.csv(system.file("ubinc", "csv", "pk_sparse_sd.csv" , package="ubiquity")), width=500, height=200)
+rhandsontable(read.csv(system.file("ubinc", "csv", "pk_sparse_sd.csv" , package="ubiquity")), width="100%", height=200)
 
 ## ----warning=FALSE, message=FALSE, echo=FALSE, error=FALSE, results="hide", fig.width=8, fig.height=4----
 #  cfg = system_nca_run(cfg, dsname        = "PKDATA",
@@ -221,8 +271,7 @@ rhandsontable(read.csv(system.file("ubinc", "csv", "pk_sparse_sd.csv" , package=
 #                                                 DOSE        = "DOSE",
 #                                                 ROUTE       = "ROUTE",
 #                                                 ID          = "ID",
-#                                                 SPARSEGROUP = "DOSE"),
-#                            digits        = 3)
+#                                                 SPARSEGROUP = "DOSE"))
 #  
 #  
 #  cfg = system_report_init(cfg)
@@ -239,9 +288,7 @@ rhandsontable(read.csv(system.file("ubinc", "csv", "pk_sparse_sd.csv" , package=
 #                                                 DOSE        = "DOSE",
 #                                                 ROUTE       = "ROUTE",
 #                                                 ID          = "ID",
-#                                                 SPARSEGROUP = "DOSE"),
-#                            digits        = 3)
-#  
+#                                                 SPARSEGROUP = "DOSE"))
 #  
 #  cfg = system_report_init(cfg)
 #  cfg = system_report_slide_title(cfg, title = "NCA of Sparsely Sampled PK")
@@ -258,7 +305,7 @@ if(presim_loaded){
 }
 
 ## ----echo=FALSE, fig.align="center", eval=TRUE--------------------------------
-rhandsontable(nca_summary,  height=150, width=500)
+rhandsontable(nca_summary,  height=150, width="100%")
 
 ## ----warning=FALSE, message=FALSE, echo=FALSE---------------------------------
 #  save(presim, file="NCA_presim.RData")

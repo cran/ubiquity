@@ -2,18 +2,39 @@
 % Please edit documentation in R/ubiquity.R
 \name{md_to_officer}
 \alias{md_to_officer}
-\title{Parse Markdown for OfficeR}
+\title{Parse Markdown for Officer}
 \usage{
-md_to_officer(str)
+md_to_officer(
+  str,
+  default_format = list(color = "black", font.size = 12, bold = FALSE, italic = FALSE,
+    underlined = FALSE, font.family = "Cambria (Body)", vertical.align = "baseline",
+    shading.color = "transparent")
+)
 }
 \arguments{
 \item{str}{string containing Markdown can contain the following elements:
 \itemize{
- \item paragraph    Two or more new lines creates a paragraph
- \item \code{"bold"}    Can be either \code{"*text in bold*"} or \code{"_text in bold_"}
- \item \code{"italic"}  Can be either \code{"**text in bold**"} or \code{"__text in bold__"}
- \item \code{"subscript"}  \code{"Normal~subscript~"} 
- \item \code{"superscript"}  \code{"Normal^superscript^"} 
+ \item paragraph:   two or more new lines creates a paragraph
+ \item bold:        can be either \code{"*text in bold*"} or \code{"_text in bold_"}
+ \item italics:     can be either \code{"**text in italics**"} or \code{"__text in italics__"}
+ \item subscript:   \code{"Normal~subscript~"} 
+ \item superscript: \code{"Normal^superscript^"} 
+ \item color:       \code{"<color:red>red text</color>"} 
+ \item shade:       \code{"<shade:#33ff33>shading</shade>"} 
+ \item font family: \code{"<ff:symbol>symbol</ff>"} 
+}}
+
+\item{default_format}{list containing the default format for elements not defined with markdown default values. 
+\preformatted{
+   default_format = list( 
+      color          = "black",
+      font.size      = 12,
+      bold           = FALSE,
+      italic         = FALSE,
+      underlined     = FALSE,
+      font.family    = "Cambria (Body)",
+      vertical.align = "baseline",
+      shading.color  = "transparent")
 }}
 }
 \value{
@@ -29,8 +50,12 @@ elements:
 \preformatted{
   myfpar = eval(parse(text=pgparse$pgraph_1$fpar_cmd))
  }
+ \item \code{as_paragraph_cmd} String containing the as_paragraph_cmd that can be run using
+\preformatted{
+  myas_para = eval(parse(text=pgparse$pgraph_1$as_paragraph_cmd))
+ }
 }
 }
 \description{
-Parses text in Markdown format and returns fpar command strings to be used with OfficeR
+Parses text in Markdown format and returns fpar and as_paragraph command strings to be used with Officer
 }

@@ -5,7 +5,6 @@ require(shiny)
 require(shinydashboard)
 require(deSolve)
 require(ggplot2)
-require(gdata)
 require(foreach)
 require(doParallel)
 require(rhandsontable)
@@ -124,6 +123,12 @@ initialize_session <- function(session) {
 
   # loading the cfg variable
   cfg=gui_fetch_cfg(session)
+
+  # setting the working directory
+  cfg = system_set_option(cfg,
+                          group  = "general"   ,
+                          option = "output_directory",
+                          value  =  file.path(user_dir, "output"))
   
   # initializing the general ubiquity log
   cfg = system_set_option(cfg, 

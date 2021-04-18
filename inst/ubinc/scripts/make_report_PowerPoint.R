@@ -113,7 +113,6 @@ cfg = system_report_slide_section(cfg,
 #
 
 
-# 
 cfg = system_report_slide_two_col(cfg,
         title                  = "Two columns of plain text",      
         sub_title              = "Subtitle", 
@@ -128,6 +127,27 @@ cfg = system_report_slide_two_col(cfg,
        left_content           = lcontent,
        right_content          = lcontent)
   
+cfg = system_report_slide_two_col(cfg,
+       title                  = "Two Col Text w/Headers",      
+       sub_title              = "Two columns of text with headers",
+       content_type           = "text", 
+       right_content          = "Right Text",
+       left_content_type      = "text",
+       left_content           = "Left Text",
+       left_content_header    = "Left Header",
+       right_content_header   = "Right Header")
+
+
+cfg = system_report_slide_two_col(cfg,
+       title                  = "Two Col Text w/Headers",      
+       sub_title              = "Two columns of text with headers",
+       content_type           = "list", 
+       right_content          = c(1, "Right Text"),
+       left_content_type      = "list",
+       left_content           = c(1, "Left Text"),
+       left_content_header    = "Left Header",
+       right_content_type     = "list",
+       right_content_header   = "Right Header")
   
 cfg = system_report_slide_two_col(cfg,
        title                  = "Two columns: image and table",      
@@ -150,7 +170,7 @@ cfg = system_report_slide_two_col(cfg,
 
 
 
-# # Example using flex tables
+# Example usingflex tables
 tcf = list()
 tcf$table = data.frame(Parameters = c("Vp", "Cl", "Q", "Vt"),
                        Values     = 1:4,
@@ -165,20 +185,38 @@ tcf$table_autofit = TRUE
 tcf$table_theme   ='theme_zebra'
 
 cfg = system_report_slide_two_col(cfg,
-       title                       = "Two columns: flex table and image with header",      
+       title                       = "Two columns: flextable and image with header",      
        sub_title                   = "With a header",
        content_type                = "list",    
        right_content_type          = "flextable",
        right_content               = tcf,
        left_content_type           = "ggplot",
        left_content                = p,
-       left_content_header         =  "Header text",  
-       right_content_header_type   =  "ggplot",
+       left_content_header_type    = "text",  
+       left_content_header         = "Header text",  
+       right_content_header_type   = "ggplot",
        right_content_header        =  p)
 
+# Example using flextables explicitly 
+library(magrittr)
+library(flextable)
+
+data = data.frame(property = c("mean",   "variance"),
+                  Cmax     = c(2,         0.1),
+                  AUCinf   = c(22,       0.21),
+                  AUClast  = c(22,       0.21))
+
+# This creates a flextable object:
+ft = flextable::flextable(data)                      
+
+cfg = system_report_slide_content(cfg,
+       title        = "Userdefined Flextable",
+       sub_title    = "flextable_object",    
+       content_type = "flextable_object", 
+       content      = ft)
 
 # Pulling the report
-rpt = system_report_fetch(cfg)
+rpt = system_fetch_report(cfg)
 
 # you can make changes to rpt directly using the 
 # functions from officer here
