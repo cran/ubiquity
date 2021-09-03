@@ -5,7 +5,7 @@ require(ggplot2)
 require(rhandsontable)
 require(gridExtra)
 require(flextable)
-# The presim variable will contain presimualted data when eval is set to true
+# The presim variable will contain presimulated data when eval is set to true
 presim_loaded = FALSE
 
 ## ----echo=FALSE, results=FALSE------------------------------------------------
@@ -164,15 +164,17 @@ HT = hot_cols(HT, colWidths = c(80, 80,100, 450))
 HT
 
 ## ----warning=FALSE, message=FALSE, eval=FALSE, echo=TRUE, error=FALSE, results="hide", fig.width=8, fig.height=4----
-#  cfg = system_report_init(cfg, rpttype="PowerPoint")
-#  cfg = system_report_slide_title(cfg, title = "NCA of Single Dose PK")
-#  cfg = system_report_nca(cfg, analysis_name = "pk_single_dose")
-#  system_report_save(cfg, output_file=file.path("output", "pk_single_dose-report.pptx"))
+#  cfg = system_rpt_read_template(cfg, template="PowerPoint")
+#  cfg = system_rpt_add_slide(cfg,
+#    template = "title_slide",
+#    elements = list( title= list(content = "NCA Single Dose PK", type    = "text")))
+#  cfg = system_rpt_nca(cfg=cfg, analysis_name="pk_single_dose")
+#  system_rpt_save_report(cfg=cfg, output_file=file.path("output","pk_single_dose-report.pptx"))
 
 ## ----warning=FALSE, message=FALSE, eval=FALSE, echo=TRUE, error=FALSE, results="hide", fig.width=8, fig.height=4----
-#  cfg = system_report_init(cfg, rpttype="Word")
-#  cfg = system_report_nca(cfg, analysis_name = "pk_single_dose")
-#  system_report_save(cfg=cfg, output_file=file.path("output", "pk_single_dose-report.docx"))
+#  cfg = system_rpt_read_template(cfg, template="Word")
+#  cfg = system_rpt_nca(cfg=cfg, analysis_name="pk_single_dose")
+#  system_rpt_save_report(cfg=cfg, output_file=file.path("output","pk_single_dose-report.docx"))
 
 ## ----warning=FALSE, message=FALSE, echo=TRUE, error=FALSE---------------------
 #  nca_table = system_nca_summary(cfg,
@@ -200,7 +202,7 @@ if(presim_loaded){
 }
 
 ## ----warning=FALSE, echo=FALSE, eval=TRUE-------------------------------------
-nca_table[["vignette"]]
+knitr::knit_print(nca_table[["vignette"]])
 
 ## ----warning=FALSE, message=FALSE, echo=TRUE, error=FALSE, results="hide", fig.width=8, fig.height=4----
 #  cfg = build_system(system_file="system.txt")
@@ -235,10 +237,10 @@ rhandsontable(read.csv(system.file("ubinc", "csv", "pk_all_md.csv" , package="ub
 #                                                 ID      = "ID",
 #                                                 DOSENUM = "DOSENUM",
 #                                                 EXTRAP  = "EXTRAP"))
-#  cfg = system_report_init(cfg)
-#  cfg = system_report_slide_title(cfg, title = "NCA of Multiple Dose PK")
-#  cfg = system_report_nca(cfg, analysis_name = "pk_multiple_dose")
-#  system_report_save(cfg, output_file=file.path("output", "pk_multiple_dose-report.pptx"))
+#  cfg = system_rpt_read_template(cfg, template="PowerPoint")
+#  cfg = system_rpt_nca(cfg=cfg, analysis_name="pk_multiple_dose")
+#  system_rpt_save_report(cfg=cfg, output_file=file.path("output","pk_multiple_dose-report.pptx"))
+#  
 
 ## ----warning=FALSE, message=FALSE, echo=FALSE, error=FALSE--------------------
 #  nca_summary = read.csv(file.path("output", "pk_multiple_dose-nca_summary-pknca.csv"))
@@ -274,8 +276,7 @@ rhandsontable(read.csv(system.file("ubinc", "csv", "pk_sparse_sd.csv" , package=
 #                                                 SPARSEGROUP = "DOSE"))
 #  
 #  
-#  cfg = system_report_init(cfg)
-#  cfg = system_report_slide_title(cfg, title = "NCA of Sparsely Sampled PK")
+#  cfg = system_rpt_read_template(cfg, template="PowerPoint")
 
 ## ----warning=FALSE, message=FALSE, eval=FALSE, echo=TRUE, error=FALSE, results="hide", fig.width=8, fig.height=4----
 #  cfg = system_nca_run(cfg, dsname        = "PKDATA",
@@ -289,11 +290,12 @@ rhandsontable(read.csv(system.file("ubinc", "csv", "pk_sparse_sd.csv" , package=
 #                                                 ROUTE       = "ROUTE",
 #                                                 ID          = "ID",
 #                                                 SPARSEGROUP = "DOSE"))
-#  
-#  cfg = system_report_init(cfg)
-#  cfg = system_report_slide_title(cfg, title = "NCA of Sparsely Sampled PK")
-#  cfg = system_report_nca(cfg, analysis_name = "pk_sparse")
-#  system_report_save(cfg=cfg, output_file=file.path("output", "pk_sparse-report.pptx"))
+#  cfg = system_rpt_read_template(cfg, template="PowerPoint")
+#  cfg = system_rpt_add_slide(cfg,
+#    template = "title_slide",
+#    elements = list( title= list(content = "NCA of Sparsely Sampled PK", type    = "text")))
+#  cfg = system_rpt_nca(cfg=cfg, analysis_name="pk_sparse")
+#  system_rpt_save_report(cfg=cfg, output_file=file.path("output","pk_sparse-report.pptx"))
 
 ## ----warning=FALSE, message=FALSE, echo=FALSE, error=FALSE--------------------
 #  nca_summary = read.csv(file.path("output", "pk_sparse-nca_summary-pknca.csv"))

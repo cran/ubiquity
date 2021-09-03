@@ -169,14 +169,16 @@ require(rhandsontable)
 #  ggsave(filename="Estimation-parent-op.png", plot=estout$op, height=4, width=7, units="in", dpi=72)
 
 ## ----results="hide", echo=TRUE, eval=FALSE------------------------------------
-#  cfg = system_report_init(cfg, rpttype="PowerPoint")
-#  cfg = system_report_estimation(cfg=cfg, analysis_name=analysis_name)
-#  system_report_save(cfg=cfg, output_file=file.path("output",paste(analysis_name, "-report.pptx", sep="")))
+#  cfg = system_rpt_read_template(cfg, template="PowerPoint")
+#  cfg = system_rpt_estimation(cfg=cfg, analysis_name=analysis_name)
+#  system_rpt_save_report(cfg=cfg,
+#   output_file=file.path("output",paste(analysis_name, "-report.pptx", sep="")))
 
 ## ----results="hide", echo=TRUE, eval=FALSE------------------------------------
-#  cfg = system_report_init(cfg, rpttype="Word")
-#  cfg = system_report_estimation(cfg=cfg, analysis_name=analysis_name)
-#  system_report_save(cfg=cfg, output_file=file.path("output",paste(analysis_name, "-report.docx", sep="")))
+#  cfg = system_rpt_read_template(cfg, template="Word")
+#  cfg = system_rpt_estimation(cfg=cfg, analysis_name=analysis_name)
+#  system_rpt_save_report(cfg=cfg,
+#  output_file=file.path("output",paste(analysis_name, "-report.docx", sep="")))
 
 ## ----results="hide", echo=TRUE, eval=FALSE------------------------------------
 #  pnames = c('Vp',

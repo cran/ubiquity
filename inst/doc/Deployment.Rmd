@@ -2,7 +2,7 @@
 title: 'Model Deployment'
 author: "John Harrold & Anson K Abraham"
 date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
+output:  rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Deployment}
   %\VignetteEngine{knitr::rmarkdown}
@@ -19,8 +19,7 @@ require(doParallel)
 require(rhandsontable)
 ```
 
-
-## Introduction
+## Introduction <img src="ubiquity_hex.png" align="right" height="138.5" border="0px" />
 
 Once a model has been developed it may be useful to provide an easy way to run simulations or automate specific analyses. Do to that, a ubiquity provides a ShinyApp that allows the model to be run from an easy to use interface that is highly customizable. This App can be run locally (useful during meetings to answer quick questions) or deployed on a Shiny server to allow others access to the model.
 
@@ -50,7 +49,7 @@ Next simply open ``ubiquity_app.R`` in RStudio and source it, and RStudio will o
 
 After starting  the App will load the default dosing from the \verb|system.txt| file and run the model. The first model output will be plotted. And as you make changes to the App, those changes will be reflected in the user log at the bottom of the screen. You can change the outputs being plotted, the axis limits, and other aspects of the plot using the plot controls below the figure. 
 
-![ShinyApp interface after initialization](ShinyApp-ss-Initialization.png){width=80%} 
+![ShinyApp interface after initialization](ShinyApp-ss-Initialization.png){width=600} 
 
 The intent is to provide a quick method to get the model up and running with default behaviors that will provide for most of what users will need. The behavior of the ShinyApp can be further customized (described below). First we will discuss the default interface:
 

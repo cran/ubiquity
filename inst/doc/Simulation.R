@@ -18,6 +18,13 @@ require(rhandsontable)
 ## ----results="hide"-----------------------------------------------------------
 #  cfg = build_system(system_file = "system.txt")
 
+## ----results="hide", warning=FALSE, echo=FALSE--------------------------------
+#  cfg_orig = cfg
+#  save(cfg_orig, file="Simulation_cfg_orig.RData")
+
+## ----echo=FALSE, eval=TRUE----------------------------------------------------
+load(file="Simulation_cfg_orig.RData")
+
 ## ----results="hide"-----------------------------------------------------------
 #  system_fetch_template(cfg, template="Simulation")
 
@@ -55,8 +62,8 @@ p = gg_log10_yaxis(p, ylim_min=1e3, ylim_max=3e5)
 p = prepare_figure("print", p)
 print(p)
 
-## ----warning=FALSE, comment='', message=TRUE----------------------------------
-#  message(paste(system_view(cfg, 'iiv'), collapse="\n"))
+## ----warning=FALSE, comment='', message=TRUE, echo=FALSE, eval=TRUE-----------
+message(paste(system_view(cfg_orig, 'iiv'), collapse="\n"))
 
 ## ----warning=FALSE, results=FALSE---------------------------------------------
 #  cfg=system_set_option(cfg, group  = "stochastic",
@@ -89,7 +96,7 @@ p = ggplot(som$tcsummary, aes(x=ts.days, y=o.C_ng_ml.mean)) +
            geom_line(aes(x=ts.days, y=o.C_ng_ml.lb_ci), linetype="dashed", size=0.2, color="blue")  +
            xlab("Time (days)")+
            ylab("C (ng/ml) (units)")+
-           guides(fill=FALSE) 
+           guides(fill="none") 
 
 
 p     = gg_log10_yaxis(p    , ylim_min=1e3, ylim_max=3e5)

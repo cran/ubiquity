@@ -1,7 +1,5 @@
 ---
 title: 'Individual and Population Simulations'
-author: "John Harrold & Anson Abraham"
-date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Simulation}
@@ -19,7 +17,7 @@ require(doParallel)
 require(rhandsontable)
 ```
 
-## Introduction
+## Introduction <img src="ubiquity_hex.png" align="right" height="138.5" border="0px" />
 
 The workshop ([workshop.ubiquity.tools](https://ubiquity-pkpd.s3-us-west-1.amazonaws.com/files/ubiquity_workshop.zip)) provides several examples of how to perform simulations in ubiquity. To make a copy of these scripts and other supporting files in the current working directory run the following:
 
@@ -43,6 +41,15 @@ system_new(file_name="system.txt", system_file="mab_pk", overwrite = TRUE)
 
 ```{r results="hide"}
 cfg = build_system(system_file = "system.txt")
+```
+
+```{r results="hide", warning=FALSE, echo=FALSE}
+cfg_orig = cfg
+save(cfg_orig, file="Simulation_cfg_orig.RData")
+```
+
+```{r echo=FALSE, eval=TRUE}
+load(file="Simulation_cfg_orig.RData")
 ```
 
 After building any system you can then create templates. To create a template script for running simulations use ``system_fetch_template`` and specify  ``"Simulation"`` as the template argument:
@@ -109,8 +116,8 @@ print(p)
 ## Simulating Population Response From IIV (``analysis_multiple.r``) 
 
 Next we want to simulate the response of multiple subjects. This system has IIV specified in the following manner:
-```{r warning=FALSE, comment='', message=TRUE}
-message(paste(system_view(cfg, 'iiv'), collapse="\n"))
+```{r warning=FALSE, comment='', message=TRUE, echo=FALSE, eval=TRUE}
+message(paste(system_view(cfg_orig, 'iiv'), collapse="\n"))
 ```
 
 Different aspects of the Monte Carlo simulations can be specified. For example the following states that we want to simulate 20 subjects and the simulation is run using ```simulate_subjects```:
@@ -161,7 +168,7 @@ p = ggplot(som$tcsummary, aes(x=ts.days, y=o.C_ng_ml.mean)) +
            geom_line(aes(x=ts.days, y=o.C_ng_ml.lb_ci), linetype="dashed", size=0.2, color="blue")  +
            xlab("Time (days)")+
            ylab("C (ng/ml) (units)")+
-           guides(fill=FALSE) 
+           guides(fill="none") 
 
 
 p     = gg_log10_yaxis(p    , ylim_min=1e3, ylim_max=3e5)
