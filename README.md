@@ -1,4 +1,4 @@
-## ubiquity R Workflow 
+## ubiquity R Workflow <img src="man/figures/logo.png" align="right" width="120" />
 
 ![R-CMD-check](https://github.com/john-harrold/ubiquity/workflows/R-CMD-check/badge.svg)
 [![version](https://www.r-pkg.org/badges/version/ubiquity)](https://CRAN.R-project.org/package=ubiquity)
@@ -19,21 +19,26 @@ For detailed software requirements and installation instructions see this page:
 Briefly, install the following:
 
 * [R](<https://cran.r-project.org>)
-* [RStudio](<https://www.rstudio.com/products/rstudio/>)
+* [RStudio](<https://posit.co/products/open-source/rstudio/>)
 * [Perl (Windows)](<https://strawberryperl.com/>)
 * [Rtools (Windows)](<https://cran.r-project.org/bin/windows/Rtools/>)
 
 Then you can install `ubiquity` from CRAN
 
 ```r
-install.packages("ubiquity") 
+install.packages("ubiquity", dependencies=TRUE) 
 ```
 
 Or install the development version from GitHub:
 
+**Note you may need to install the development version of `onbrand` from GitHub as well**
+
 ```r
-#install.packages("devtools") 
-devtools::install_github("john-harrold/ubiquity")
+# Installing devtools if it's not already installed
+if(system.file(package="devtools") == ""){
+  install.packages("devtools") 
+}
+devtools::install_github("john-harrold/ubiquity", dependencies=TRUE)
 ```
 
 ### Getting started

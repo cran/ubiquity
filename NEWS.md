@@ -1,8 +1,21 @@
-# ubiquity 2.0.0
+# ubiquity 2.0.1
 
-[//]: ## Notes
-[//]: ## New Features
-[//]: ## Bug Fixes
+## Notes
+- Removed internal files that were no longer being used
+- Added documentation for creating user defined observation functions when running parameter estimation
+- Updated the reporting template to work with the development version of `onbrand`
+- Changed terminal messaging to use `cli`
+- Added termination criteria in estimation output
+- Fixed wrapping issue in Fortran output where unwrappable strings resulted in infinite loop
+- Added system-testing.txt example 
+- Added nlmxir output target
+- Added template creation for NONMEM, Monolix, and nlmixr
+- Fixed R command in compilation to use `R.home()`
+- Fixed broken tests
+- Updated CITATION to use bibentry
+- Fixing error when building systems in windows
+
+# ubiquity 2.0.0
 
 ## Notes
 - Lots of small updates to function documentation and the vignettes

@@ -17,7 +17,7 @@ require(doParallel)
 require(rhandsontable)
 ```
 
-## Introduction <img src="ubiquity_hex.png" align="right" height="138.5" border="0px" />
+## Introduction 
 
 The workshop ([workshop.ubiquity.tools](https://ubiquity-pkpd.s3-us-west-1.amazonaws.com/files/ubiquity_workshop.zip)) provides several examples of performing parameter estimation in ubiquity. To make a copy of these scripts and other supporting files in the current working directory run the following:
 
@@ -434,7 +434,7 @@ There are also global optimization libraries in R, and two of these can be readi
 
 To use the ``pso`` package set the following options:
 ```{r eval=FALSE}
-library("pso")
+library(pso)
 cfg = system_set_option(cfg, group  = "estimation",
                              option = "optimizer", 
                              value  = "pso")

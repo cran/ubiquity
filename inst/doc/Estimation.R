@@ -258,7 +258,7 @@ require(rhandsontable)
 #                               value  = "SANN")
 
 ## ----eval=FALSE---------------------------------------------------------------
-#  library("pso")
+#  library(pso)
 #  cfg = system_set_option(cfg, group  = "estimation",
 #                               option = "optimizer",
 #                               value  = "pso")

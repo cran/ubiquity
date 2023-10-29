@@ -47,7 +47,7 @@ load("Reporting.RData")
 ```
 
 
-## Introduction <img src="ubiquity_hex.png" align="right" height="138.5" border="0px" />
+## Introduction 
 
 Reporting is implemented using the `onbrand` package which is a templated interface to the `officer` package. Officer provides a lot of control over the generation of both Word and PowerPoint documents. If you feel comfortable programming in R, you may wan to use that package directly. However the templated workflow in `onbrand` facilitates switching between organizational templates. Currently `ubiquity` has support for generating both PowerPoint and Word reports, and this vignette will go over example scripts for both types of reports. 
 
@@ -506,7 +506,7 @@ system_rpt_save_report(cfg, output_file = "example.docx")
 
 ## Using custom organizational templates 
 
-Internally `ubiquity` uses the `onbrand` package for customizable templates. To create a template for your organization you should use the `onbrand` vignette for [Custom Templates]( http://onbrand.ubiquity.tools/articles/Custom_Office_Templates.html).  This will instruct you to create a yaml mapping file for your templates. You can use the built in organizational template as a starting point for that:
+Internally `ubiquity` uses the `onbrand` package for customizable templates. To create a template for your organization you should use the `onbrand` vignette for [Custom Templates]( https://onbrand.ubiquity.tools/articles/Custom_Office_Templates.html).  This will instruct you to create a yaml mapping file for your templates. You can use the built in organizational template as a starting point for that:
 
 ```{r message=FALSE, warning=FALSE, eval=FALSE, echo=TRUE}
 tr = system_fetch_template(cfg, template="myOrg")
