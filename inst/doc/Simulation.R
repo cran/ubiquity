@@ -7,7 +7,7 @@ require(foreach)
 require(doParallel)
 require(rhandsontable)
 
-## ---- message=FALSE-----------------------------------------------------------
+## ----message=FALSE------------------------------------------------------------
 #  library(ubiquity)
 #  fr = workshop_fetch(section="Simulation", overwrite=TRUE)
 

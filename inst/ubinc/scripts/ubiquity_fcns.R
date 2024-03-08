@@ -206,7 +206,8 @@ if(file.exists(system_file)){
     cli::cli_alert("Compiling C version of system")
   }
   # Command used to compile C version of the model:
-  compile_cmd =  paste(file.path(R.home("bin"), "R"), ' CMD SHLIB "', file.path(temp_directory, c_libfile_base_c), '"', sep="")
+  #compile_cmd =  paste(file.path(R.home("bin"), "R"), ' CMD SHLIB "', file.path(temp_directory, c_libfile_base_c), '"', sep="")
+  compile_cmd =  paste(file.path(R.home("bin"), "R"), ' CMD SHLIB "', c_libfile_base_c, '"', sep="")
 
   if(file.exists(file.path(temp_directory, 'r_ode_model.c'))){
     # storing the working directory and 
@@ -218,7 +219,12 @@ if(file.exists(system_file)){
               to   =file.path(temp_directory, c_libfile_base_c), 
               overwrite=TRUE)
     # Compling the C file
+    current_dir = getwd()
+    setwd(temp_directory)
+    on.exit( setwd(current_dir))
     output =  system(compile_cmd, intern=TRUE) 
+    setwd(current_dir)
+
     if("status" %in% names(attributes(output))){
       if(verbose == TRUE){
         if(debug == TRUE){
@@ -9655,6 +9661,12 @@ void derivs (int *neq, double *t, double *y, double *ydot,
 "
   if("C" %in% names(checklist)){
 
+    # temporary working direcotry
+    twd = normalizePath(tempdir(), winslash = "/")
+    current_dir = getwd()
+    setwd(twd)
+    on.exit( setwd(current_dir))
+
     # if the model exists from before we unload it
     if(('mymod' %in% names(getLoadedDLLs()))){
       dyn.unload(getLoadedDLLs()$mymod[["path"]])}
@@ -9722,6 +9734,7 @@ void derivs (int *neq, double *t, double *y, double *ydot,
       res$C = FALSE
     }
        
+  setwd(current_dir)
   }
 res}
 
@@ -11174,7 +11187,7 @@ res}
 #'@param cfg ubiquity system object
 #'@param analysis_name string containing the name of the NCA analysis (default \code{'analysis'})
 #'
-#'@return List with a data frame of the NCA results (\code{NCA_sum}), the raw
+#'@return List with a data frame of the NCA results (\code{NCA_summary}), the raw
 #' output from PKNCA (\code{PKNCA_results}), and also a list element indicating the
 #' overall success of the function call (\code{isgood})
 #'@seealso Vignette on NCA (\code{vignette("NCA", package = "ubiquity")}) 
