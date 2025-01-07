@@ -40,7 +40,6 @@ workflow:
  \item{"ShinyApp"}         produces \code{ubiquity_app.R}, \code{server.R} and \code{ui.R}: files needed to run the model through a Shiny App either locally or on a Shiny Server
  \item{"Model Diagram"}    produces \code{system.svg}: SVG template for producing a model diagram (Goto \url{https://inkscape.org} for a free SVG editor)
  \item{"Shiny Rmd Report"} produces \code{system_report.Rmd} and \code{test_system_report.R}: R-Markdown file used to generate report tabs for the Shiny App and a script to test it
- \item{"myOrg"}            produces \code{myOrg.R}: R-Script for defining functions used within your organization
 }
 
 And this will create files to use in other software:
@@ -49,8 +48,8 @@ And this will create files to use in other software:
  \item{"Adapt"}            produces \code{system_adapt.for} and \code{system_adapt.prm}: Fortran and parameter files for the currently selected parameter set in Adapt format.
  \item{"Berkeley Madonna"} produces \code{system_berkeley_madonna.txt}: text file with the model and the currently selected parameter set in Berkeley Madonna format
  \item{"nlmixr"}           produces \code{system_nlmixr.R} For the currently selected parameter set to define the system in the `nlmixr` format.
- \item{"NONMEM"}           produces \code{system_nonmem.R} For the currently selected parameter set as a NONMEM conntrol stream.
- \item{"Monolix"}          produces \code{system_monolix.txt} For the currently selected parameter set as a NONMEM conntrol stream.
+ \item{"NONMEM"}           produces \code{system_nonmem.ctl} For the currently selected parameter set as a NONMEM conntrol stream.
+ \item{"Monolix"}          produces \code{system_monolix.txt} and \code{system_monolix.mlxtran} For the currently selected parameter set.
  \item{"mrgsolve"}         produces \code{system_mrgsolve.cpp}: text file with the model and the currently selected parameter set in mrgsolve format  
 }
 }

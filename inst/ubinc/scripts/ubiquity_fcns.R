@@ -17,7 +17,6 @@
 #'@importFrom flextable theme_vanilla theme_booktabs theme_tron theme_vader theme_zebra
 #'@importFrom parallel stopCluster makeCluster
 #'@importFrom readxl read_xls read_xlsx
-#'@importFrom magrittr "%>%"
 #'@importFrom PKNCA PKNCA.options PKNCAconc PKNCAdose PKNCAdata pk.nca get.interval.cols
 #'@importFrom utils capture.output read.csv read.delim txtProgressBar setTxtProgressBar write.csv tail packageVersion sessionInfo
 #'@importFrom stats median qt var sd
@@ -222,7 +221,14 @@ if(file.exists(system_file)){
     current_dir = getwd()
     setwd(temp_directory)
     on.exit( setwd(current_dir))
-    output =  system(compile_cmd, intern=TRUE) 
+    # We run this once to suppress any standard error from being printed
+    # This suppresses compiler messages that are not relevant
+    output =  system(compile_cmd, intern=TRUE, ignore.stderr=TRUE) 
+    # IF there is a status in the output then we rurun with stderr printed
+    # so the user can see any flagged errors
+    if("status" %in% names(attributes(output))){
+      output =  system(compile_cmd, intern=TRUE, ignore.stderr=FALSE)
+    }
     setwd(current_dir)
 
     if("status" %in% names(attributes(output))){
@@ -292,7 +298,7 @@ return(cfg)}
 #'@param overwrite if \code{TRUE} the new workshop files will overwrite any existing files present (\code{FALSE})
 #'@param copy_files if \code{TRUE} the files will be written to the output_directory, if \code{FALSE} only the names and locations of the files will be returned (\code{TRUE})
 #'@param output_directory directory where workshop files will be placed (getwd())
-#'@details Valid sections are "Simulation", "Estimation", "Titration" "Reporting", and "NCA"
+#'@details Valid sections are "Simulation", "Estimation", "In Vitro", "Titration" "Reporting", and "NCA"
 #'
 #'@return list
 #'@examples
@@ -304,7 +310,7 @@ workshop_fetch <- function(section          = "Simulation",
                            copy_files       = TRUE,
                            output_directory = getwd()){
   res = list()
-  allowed = c("Simulation", "Estimation", "Titration", "Reporting", "Testing", "NCA")
+  allowed = c("Simulation", "Estimation", "In Vitro", "Titration", "Reporting", "Testing", "NCA")
 
   isgood = TRUE
   # This function only works if we're using the package
@@ -379,6 +385,16 @@ workshop_fetch <- function(section          = "Simulation",
                           "analysis_visit_infusion_dosing.r",                           
                           "system.txt")
          write_file   = c(TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE)
+      } else if(section=="In Vitro") {
+         sources      = c(file.path(src_dir, "analysis_in_vitro.R"                          ),
+                          file.path(src_dir, "mk_data_in_vitro.R"                           ),
+                          file.path(csv_dir, "in_vitro_er_data.csv"                         ),
+                          file.path(sys_dir, "system-in_vitro.txt"                          ))
+         destinations = c("analysis_in_vitro.R",                    
+                          "mk_data_in_vitro.R",                          
+                          "in_vitro_er_data.csv",                       
+                          "system-in_vitro.txt")
+         write_file   = c(TRUE, TRUE, TRUE, TRUE)
       } else if(section=="Testing") {
          sources      = c(file.path(src_dir, "workshop_test.R"))
          destinations = c("workshop_test.R")
@@ -622,7 +638,6 @@ sfs}
 #'  \item{"ShinyApp"}         produces \code{ubiquity_app.R}, \code{server.R} and \code{ui.R}: files needed to run the model through a Shiny App either locally or on a Shiny Server
 #'  \item{"Model Diagram"}    produces \code{system.svg}: SVG template for producing a model diagram (Goto \url{https://inkscape.org} for a free SVG editor)
 #'  \item{"Shiny Rmd Report"} produces \code{system_report.Rmd} and \code{test_system_report.R}: R-Markdown file used to generate report tabs for the Shiny App and a script to test it
-#'  \item{"myOrg"}            produces \code{myOrg.R}: R-Script for defining functions used within your organization
 #'}
 #'
 #'And this will create files to use in other software:
@@ -631,8 +646,8 @@ sfs}
 #'  \item{"Adapt"}            produces \code{system_adapt.for} and \code{system_adapt.prm}: Fortran and parameter files for the currently selected parameter set in Adapt format.
 #'  \item{"Berkeley Madonna"} produces \code{system_berkeley_madonna.txt}: text file with the model and the currently selected parameter set in Berkeley Madonna format
 #'  \item{"nlmixr"}           produces \code{system_nlmixr.R} For the currently selected parameter set to define the system in the `nlmixr` format.
-#'  \item{"NONMEM"}           produces \code{system_nonmem.R} For the currently selected parameter set as a NONMEM conntrol stream.
-#'  \item{"Monolix"}          produces \code{system_monolix.txt} For the currently selected parameter set as a NONMEM conntrol stream.
+#'  \item{"NONMEM"}           produces \code{system_nonmem.ctl} For the currently selected parameter set as a NONMEM conntrol stream.
+#'  \item{"Monolix"}          produces \code{system_monolix.txt} and \code{system_monolix.mlxtran} For the currently selected parameter set.
 #'  \item{"mrgsolve"}         produces \code{system_mrgsolve.cpp}: text file with the model and the currently selected parameter set in mrgsolve format  
 #'}
 #'
@@ -663,10 +678,9 @@ system_fetch_template  <- function(cfg, template="Simulation", overwrite=FALSE, 
              "ShinyApp",   "Shiny Rmd Report",
              "NCA", 
              "mrgsolve",   
-             "myOrg", 
              "Model Diagram",
              "Berkeley Madonna", 
-             "Adapt", "nlmixr",
+             "Adapt", "nlmixr2",
              "NONMEM", "Monolix",
              "mrgsolve")
 
@@ -737,40 +751,97 @@ system_fetch_template  <- function(cfg, template="Simulation", overwrite=FALSE, 
      destinations = c("system_adapt.for", "system_adapt.prm")
      write_file   = c(TRUE, TRUE)
    }
-   if(template == "myOrg"){
-     sources      = c(file.path(template_dir, sprintf("report.yaml")))
-     destinations = c("myOrg.yaml")
-     write_file   = c(TRUE)
-   }
-
    if(template == "Model Diagram"){
      sources      = c(file.path(template_dir, sprintf("system.svg")))
      destinations = c("system.svg")
      write_file   = c(TRUE)
    }
-   if(template == "NONMEM"){
-     sources      = c(file.path(temp_directory, sprintf("target_nonmem-%s.ctl",current_set)))
-     destinations = c("system_nonmem.ctl")
-     write_file   = c(TRUE, TRUE)
+   if(template == "NONMEM" || template == "Monolix" ){
+     # Needed because capture is created in an eval
+     capture    = NULL
+     deps_found = TRUE
+     # Walking through the dependencies to make sure everything is needed
+     if(system.file(package="rxode2") == ""){
+       isgood     = FALSE
+       deps_found = FALSE
+       vp(cfg, paste0("The rxode2 package is needed to create ", template, " template."))
+     }
+     if(system.file(package="babelmixr2") == ""){
+       isgood     = FALSE
+       deps_found = FALSE
+       vp(cfg, paste0("The babelmixr2 package is needed to create ", template, " template."))
+     }
+
+     if(deps_found){
+       nlmixr_file = file.path(temp_directory, sprintf("target_nlmixr-%s.R",current_set))
+       cmd = c('require(rxode2)',
+               'require(babelmixr2)',
+               'source(nlmixr_file)',
+               'my_rx = my_model()',
+               'capture = list()')
+       if(template == "NONMEM"){
+         cmd = c(cmd,
+                 'ctl_file = tempfile(fileext=".ctl")',
+                 'tmpstr = as.character(my_rx$nonmemModel)',
+                 'fileConn = file(ctl_file)', 
+                 'writeLines(tmpstr, fileConn)',
+                 'close(fileConn)',
+                 'capture[["sources"]]      = c(ctl_file)',
+                 'capture[["destinations"]] = c("system_nonmem.ctl")',
+                 'capture[["write_file"]]   = c(TRUE)')
+       }
+       if(template == "Monolix"){
+         cmd = c(cmd,
+                 'mlxtran_file = tempfile(fileext=".mlxtran")',
+                 'tmpstr = as.character(my_rx$mlxtran)',
+                 'fileConn = file(mlxtran_file)', 
+                 'writeLines(tmpstr, fileConn)',
+                 'close(fileConn)',
+                 'mlxtxt_file = tempfile(fileext=".txt")',
+                 'tmpstr = as.character(my_rx$monolixModel)',
+                 'fileConn = file(mlxtxt_file)', 
+                 'writeLines(tmpstr, fileConn)',
+                 'close(fileConn)',
+                 'capture[["sources"]]      = c(mlxtran_file, mlxtxt_file)',
+                 'capture[["destinations"]] = c("system_monolix.mlxtran",  "system_monolix.txt")',
+                 'capture[["write_file"]]   = c(TRUE, TRUE)')
+       }
+
+
+        tcres = tryCatch(
+          { 
+           eval(parse(text=paste0(cmd, collapse="\n")))
+           list(capture=capture,isgood=TRUE)
+          },
+         error = function(e) {
+           list(error=e, isgood=FALSE)
+           })
+
+       if(tcres[["isgood"]]){
+         sources      = tcres[["capture"]][["sources"]]
+         destinations = tcres[["capture"]][["destinations"]] 
+         write_file   = tcres[["capture"]][["write_file"]] 
+       } else {
+         vp(cfg, as.character(tcres$error), fmt="danger")
+         isgood=FALSE
+       }
+     }
    }
-   if(template == "Monolix"){
-     sources      = c(file.path(temp_directory, sprintf("target_monolix-%s.txt",current_set)))
-     destinations = c("system_monolix.txt")
-     write_file   = c(TRUE, TRUE)
-   }
-   if(template == "nlmixr"){
+   if(template == "nlmixr2"){
      sources      = c(file.path(temp_directory, sprintf("target_nlmixr-%s.R",current_set)))
-     destinations = c("system_nlmixr.R")
-     write_file   = c(TRUE, TRUE)
+     destinations = c("system_nlmixr2.R")
+     write_file   = c(TRUE)
    }
 
    # if overwrite ifs FALSE we check each of the destination files to see if
    # they exist. Then we set write_file to FALSE if they do exist, and throw
    # up an error.
    if(!overwrite){
-     for(fidx in 1:length(destinations)){
-       if(file.exists(file.path(output_directory, destinations[fidx]))){
-         write_file[fidx] = FALSE 
+     if(!is.null(destinations)){
+       for(fidx in 1:length(destinations)){
+         if(file.exists(file.path(output_directory, destinations[fidx]))){
+           write_file[fidx] = FALSE 
+         }
        }
      }
    }
@@ -780,16 +851,17 @@ system_fetch_template  <- function(cfg, template="Simulation", overwrite=FALSE, 
    res$destinations = destinations
    res$write_file   = write_file
   
-
    # next we write the files that are TRUE
-   for(fidx in 1:length(destinations)){
-     if(write_file[fidx]){
-       file.copy(sources[fidx], file.path(output_directory, destinations[fidx]), overwrite=TRUE)
-       vp(cfg, sprintf("Creating file: %s", file.path(output_directory, destinations[fidx])))
-     } else {
-       isgood = FALSE
-       vp(cfg, sprintf("File: %s, exists, and was not copied.", file.path(output_directory, destinations[fidx])))
-       vp(cfg, sprintf("Set overwrite=TRUE to force this file to be copied."))
+   if(!is.null(destinations)){
+     for(fidx in 1:length(destinations)){
+       if(write_file[fidx]){
+         file.copy(sources[fidx], file.path(output_directory, destinations[fidx]), overwrite=TRUE)
+         vp(cfg, sprintf("Creating file: %s", file.path(output_directory, destinations[fidx])))
+       } else {
+         isgood = FALSE
+         vp(cfg, sprintf("File: %s, exists, and was not copied.", file.path(output_directory, destinations[fidx])))
+         vp(cfg, sprintf("Set overwrite=TRUE to force this file to be copied."))
+       }
      }
    }
  } else {
@@ -1472,6 +1544,7 @@ return(cfg)}
 #'
 #' \bold{\code{group="simulation"}}
 #'\itemize{
+#' \item \code{"dynamic"} - Set to \code{TRUE} (default) and simulations will behave normally. Set to \code{FALSE} and ODES will evaulate to zero. This is useful for steady-state anslysis.
 #' \item \code{"include_important_output_times"} - Automatically add bolus, infusion rate switching times, etc: \code{"yes"}(default), \code{"no"}.
 #' \item \code{"integrate_with"} - Specify if the ODE solver should use the Rscript (\code{"r-file"}) or compiled C (\code{"c-file"}), if the build process can compile and load the C version it will be the default otherwise it will switch over to the R script.
 #' \item \code{"output_times"} - Vector of times to evaulate the simulation (default \code{seq(0,100,1)}).
@@ -4838,16 +4911,29 @@ system_define_cohort <- function(cfg, cohort){
        }
 
        #
-       # Checking the variance
+       # Checking the variance if everything is good up to this point
        #
-       if(!('variance' %in% names(cohort$outputs[[oname]]$model))){
-       # JMH add logic' here
-        isgood = FALSE 
-        vp(cfg, sprintf('Error: For the output >%s< the model variance must be specified', oname))
-        vp(cfg, sprintf("       cohort$outputs$%s$model$variance = 'PRED^2'; ", oname))
+       if(isgood){
+         if(is.null(cohort[["outputs"]][[oname]][["model"]][["variance"]])){
+
+           # If the variance was defined in the system file we pick that up
+           # here:
+           if(!is.null(cfg[["ve"]][[ cohort[["outputs"]][[oname]][["model"]][["value"]] ]])){
+             cohort[["outputs"]][[oname]][["model"]][["variance"]] =
+               cfg[["ve"]][[ cohort[["outputs"]][[oname]][["model"]][["value"]] ]]
+           }else{
+             # otherwise we default to 1 and throw a message back to the user
+             vp(cfg, sprintf('Warning: For the output >%s< the model variance was not specified. You can ', oname));
+             vp(cfg, sprintf('         do this two ways. Either when defining the cohort:'))
+             vp(cfg, sprintf(' '))
+             vp(cfg, sprintf('           cohort$outputs$%s$model$variance = "PRED^2" ', oname))
+             vp(cfg, sprintf(' '))
+             vp(cfg, sprintf('         Or in the system file using the <OE:?> descriptor.'))
+             vp(cfg, sprintf('         Defaulting to PRED^2.'))
+             cohort[["outputs"]][[oname]][["model"]][["variance"]] = "PRED^2"
+           }
+         }
        }
-
-
      }
      else{
       isgood = FALSE 
@@ -5441,6 +5527,7 @@ SIMINT_simulation_options$integrate_with                 = "r-file"
 SIMINT_simulation_options$solver_opts$rtol               = 1e-6
 SIMINT_simulation_options$initial_conditions             = NA  
 SIMINT_simulation_options$parallel                       = "no"
+SIMINT_simulation_options$dynamic                        = TRUE 
 SIMINT_simulation_options$compute_cores                  = 1
 SIMINT_simulation_options$sample_bolus_delta             = 1e-6
 SIMINT_simulation_options$sample_forcing_delta           = 1e-3
@@ -5470,6 +5557,15 @@ for(SIMINT_option in names(SIMINT_cfg$options$simulation_options)){
 # The times these events occur are stored in the 
 # important_times variable
 SIMINT_important_times = SIMINT_simulation_options$output_times
+
+
+# Setting the dynamic control parameter based on the user option 
+if(SIMINT_simulation_options$dynamic){
+  SIMINT_parameters[["SIMINT_dynamic"]] = 1
+} else {
+  SIMINT_parameters[["SIMINT_dynamic"]] = 0
+}
+
 
 # placing the parameters vector into cfg 
 # because cfg is passed into the odes
@@ -10676,7 +10772,6 @@ system_nca_summary = function(cfg,
                           table_theme       = "theme_zebra"
                           ){
 
-invisible(system_req("magrittr"))
 invisible(system_req("dplyr"))
 invisible(system_req("flextable"))
 # Setting defaults for the function
@@ -10925,16 +11020,16 @@ if(isgood){
   #------------------------------------------
   # Creating the flextable object
   sum_table_ft = 
-       flextable::flextable(rows_data)                       %>% 
-       flextable::delete_part(part = "header")               %>%
+       flextable::flextable(rows_data)                       |>  
+       flextable::delete_part(part = "header")               |>  
        flextable::add_header(values =as.list(rows_header))  
 
   # If the user specified a summary row we add that here:
   if(!is.null(summary_stats)){
-    sum_table_ft = sum_table_ft %>% flextable::add_footer(values =as.list(rows_summary)) 
+    sum_table_ft = sum_table_ft |>  flextable::add_footer(values =as.list(rows_summary)) 
   } 
   if(!is.null(table_theme)){
-    eval(parse(text=paste("sum_table_ft = sum_table_ft %>% flextable::", table_theme, "()", sep="")))
+    eval(parse(text=paste("sum_table_ft = sum_table_ft |>  flextable::", table_theme, "()", sep="")))
   }
   #------------------------------------------
   # Applying markdown formatting

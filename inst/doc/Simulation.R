@@ -8,46 +8,46 @@ require(doParallel)
 require(rhandsontable)
 
 ## ----message=FALSE------------------------------------------------------------
-#  library(ubiquity)
-#  fr = workshop_fetch(section="Simulation", overwrite=TRUE)
+# library(ubiquity)
+# fr = workshop_fetch(section="Simulation", overwrite=TRUE)
 
 ## ----results="hide",  echo=FALSE----------------------------------------------
-#  library(ubiquity)
-#  system_new(file_name="system.txt", system_file="mab_pk", overwrite = TRUE)
+# library(ubiquity)
+# system_new(file_name="system.txt", system_file="mab_pk", overwrite = TRUE)
 
 ## ----results="hide"-----------------------------------------------------------
-#  cfg = build_system(system_file = "system.txt")
+# cfg = build_system(system_file = "system.txt")
 
 ## ----results="hide", warning=FALSE, echo=FALSE--------------------------------
-#  cfg_orig = cfg
-#  save(cfg_orig, file="Simulation_cfg_orig.RData")
+# cfg_orig = cfg
+# save(cfg_orig, file="Simulation_cfg_orig.RData")
 
 ## ----echo=FALSE, eval=TRUE----------------------------------------------------
 load(file="Simulation_cfg_orig.RData")
 
 ## ----results="hide"-----------------------------------------------------------
-#  system_fetch_template(cfg, template="Simulation")
+# system_fetch_template(cfg, template="Simulation")
 
 ## ----results="hide", warning=FALSE--------------------------------------------
-#  cfg = build_system(system_file = "system.txt")
-#  parameters = system_fetch_parameters(cfg)
+# cfg = build_system(system_file = "system.txt")
+# parameters = system_fetch_parameters(cfg)
 
 ## ----results="hide"-----------------------------------------------------------
-#  cfg = system_set_option(cfg, group  = "simulation",
-#                               option = "output_times",
-#                               seq(0,3*4*7,1))
+# cfg = system_set_option(cfg, group  = "simulation",
+#                              option = "output_times",
+#                              seq(0,3*4*7,1))
 
 ## ----results="hide"-----------------------------------------------------------
-#  cfg = system_zero_inputs(cfg)
-#  cfg = system_set_bolus(cfg, state  = "At",
-#                              times  = c(  0,  14,  28,  42 ), #  day
-#                              values = c(200, 200, 200, 200 )) #  mg
+# cfg = system_zero_inputs(cfg)
+# cfg = system_set_bolus(cfg, state  = "At",
+#                             times  = c(  0,  14,  28,  42 ), #  day
+#                             values = c(200, 200, 200, 200 )) #  mg
 
 ## ----results="hide", warning=FALSE--------------------------------------------
-#  som = run_simulation_ubiquity(parameters, cfg)
+# som = run_simulation_ubiquity(parameters, cfg)
 
 ## ----results="hide", warning=FALSE, echo=FALSE--------------------------------
-#  save(som, file="Simulation_som_single.RData")
+# save(som, file="Simulation_som_single.RData")
 
 ## ----echo=FALSE, eval=TRUE----------------------------------------------------
 load("Simulation_som_single.RData")
@@ -66,21 +66,21 @@ print(p)
 message(paste(system_view(cfg_orig, 'iiv'), collapse="\n"))
 
 ## ----warning=FALSE, results=FALSE---------------------------------------------
-#  cfg=system_set_option(cfg, group  = "stochastic",
-#                             option = "nsub",
-#                             value  = 20)
-#  
-#  som  = simulate_subjects(parameters, cfg)
+# cfg=system_set_option(cfg, group  = "stochastic",
+#                            option = "nsub",
+#                            value  = 20)
+# 
+# som  = simulate_subjects(parameters, cfg)
 
 ## ----results="hide", warning=FALSE, echo=FALSE--------------------------------
-#  # Creating a reduced form of the simulation output to save it and use less disk space
-#  tmpsom = som
-#  som = list()
-#  som$tcsummary = data.frame(o.C_ng_ml.mean  =  tmpsom$tcsummary$o.C_ng_ml.mean,
-#                             o.C_ng_ml.ub_ci =  tmpsom$tcsummary$o.C_ng_ml.ub_ci,
-#                             o.C_ng_ml.lb_ci =  tmpsom$tcsummary$o.C_ng_ml.lb_ci,
-#                             ts.days         =  tmpsom$tcsummary$ts.days)
-#  save(som, file="Simulation_som_multiple.RData")
+# # Creating a reduced form of the simulation output to save it and use less disk space
+# tmpsom = som
+# som = list()
+# som$tcsummary = data.frame(o.C_ng_ml.mean  =  tmpsom$tcsummary$o.C_ng_ml.mean,
+#                            o.C_ng_ml.ub_ci =  tmpsom$tcsummary$o.C_ng_ml.ub_ci,
+#                            o.C_ng_ml.lb_ci =  tmpsom$tcsummary$o.C_ng_ml.lb_ci,
+#                            ts.days         =  tmpsom$tcsummary$ts.days)
+# save(som, file="Simulation_som_multiple.RData")
 
 ## ----echo=FALSE, eval=TRUE----------------------------------------------------
 load("Simulation_som_multiple.RData")
@@ -104,36 +104,36 @@ p     = prepare_figure("print", p    )
 print(p)
 
 ## ----echo=TRUE, warning=FALSE-------------------------------------------------
-#  cfg = system_load_data(cfg,
-#                         dsname    = "SUBS",
-#                         data_file = system.file("ubinc", "csv", "mab_pk_subjects.csv",
-#                                                 package = "ubiquity"))
+# cfg = system_load_data(cfg,
+#                        dsname    = "SUBS",
+#                        data_file = system.file("ubinc", "csv", "mab_pk_subjects.csv",
+#                                                package = "ubiquity"))
 
 ## ----echo=FALSE, eval=TRUE----------------------------------------------------
 SUBSCSV= read.csv(system.file("ubinc", "csv", "mab_pk_subjects.csv",  package = "ubiquity"))
 rhandsontable( SUBSCSV, width=800, height=300)
 
 ## ----results=FALSE------------------------------------------------------------
-#  cfg=system_set_option(cfg, group  = "stochastic",
-#                             option = "sub_file",
-#                             value  = "SUBS")
-#  
-#  cfg=system_set_option(cfg, group  = "stochastic",
-#                             option = "sub_file_sample",
-#                             value  = "with replacement")
+# cfg=system_set_option(cfg, group  = "stochastic",
+#                            option = "sub_file",
+#                            value  = "SUBS")
+# 
+# cfg=system_set_option(cfg, group  = "stochastic",
+#                            option = "sub_file_sample",
+#                            value  = "with replacement")
 
 ## ----results=FALSE, warning=FALSE, eval=FALSE---------------------------------
-#  som  = simulate_subjects(parameters, cfg)
+# som  = simulate_subjects(parameters, cfg)
 
 ## ----echo=TRUE, eval=FALSE----------------------------------------------------
-#  cfg=system_set_option(cfg, group  = "simulation",
-#                             option = "parallel",
-#                             value  = "multicore")
-#  
-#  cfg=system_set_option(cfg, group  = "simulation",
-#                             option = "compute_cores",
-#                             value  = detectCores() - 1)
-#  
+# cfg=system_set_option(cfg, group  = "simulation",
+#                            option = "parallel",
+#                            value  = "multicore")
+# 
+# cfg=system_set_option(cfg, group  = "simulation",
+#                            option = "compute_cores",
+#                            value  = detectCores() - 1)
+# 
 
 ## ----echo=FALSE, comment='', message=TRUE, eval=TRUE--------------------------
 cat(readLines(system.file("ubinc", "systems","system-mab_pk.txt", package="ubiquity")), sep="\n")
